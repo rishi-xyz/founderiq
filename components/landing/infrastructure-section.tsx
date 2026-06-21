@@ -3,12 +3,12 @@
 import { useEffect, useState, useRef } from "react";
 
 const locations = [
-  { city: "San Francisco", region: "US West", latency: "12ms" },
-  { city: "New York", region: "US East", latency: "18ms" },
-  { city: "London", region: "Europe", latency: "24ms" },
-  { city: "Tokyo", region: "Asia Pacific", latency: "32ms" },
-  { city: "Sydney", region: "Oceania", latency: "45ms" },
-  { city: "Sao Paulo", region: "South America", latency: "38ms" },
+  { city: "San Francisco", region: "Tech Hub", firms: "250+ firms" },
+  { city: "New York", region: "Finance Hub", firms: "180+ firms" },
+  { city: "London", region: "Europe Hub", firms: "120+ firms" },
+  { city: "Singapore", region: "Asia Hub", firms: "95+ firms" },
+  { city: "Toronto", region: "Canada Hub", firms: "85+ firms" },
+  { city: "Berlin", region: "Europe Hub", firms: "70+ firms" },
 ];
 
 export function InfrastructureSection() {
@@ -47,31 +47,30 @@ export function InfrastructureSection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              Infrastructure
+              Global Adoption
             </span>
-            <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Global by
+            <h2 className="text-4xl lg:text-5xl font-display tracking-tight mb-8">
+              Trusted by VCs, Angels
               <br />
-              default.
+              and Accelerators Worldwide.
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Deploy once, run everywhere. Our edge network spans 17 data centers 
-              across 6 continents, delivering sub-50ms latency to 99% of the world.
+            <p className="text-lg text-muted-foreground leading-relaxed mb-12">
+              FounderIQ is being adopted by top investment firms across major venture hubs. From early-stage angels to institutional VCs, investment professionals are using FounderIQ to make better decisions faster.
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8">
               <div>
-                <div className="text-4xl lg:text-5xl font-display mb-2">17</div>
-                <div className="text-sm text-muted-foreground">Data centers</div>
+                <div className="text-4xl lg:text-5xl font-display mb-2">800+</div>
+                <div className="text-sm text-muted-foreground">Firms (Est.)</div>
               </div>
               <div>
-                <div className="text-4xl lg:text-5xl font-display mb-2">99.99%</div>
-                <div className="text-sm text-muted-foreground">Uptime SLA</div>
+                <div className="text-4xl lg:text-5xl font-display mb-2">6</div>
+                <div className="text-sm text-muted-foreground">Major Hubs</div>
               </div>
               <div>
-                <div className="text-4xl lg:text-5xl font-display mb-2">&lt;50ms</div>
-                <div className="text-sm text-muted-foreground">Global latency</div>
+                <div className="text-4xl lg:text-5xl font-display mb-2">4</div>
+                <div className="text-sm text-muted-foreground">Continents</div>
               </div>
             </div>
           </div>
@@ -85,10 +84,10 @@ export function InfrastructureSection() {
             <div className="border border-foreground/10">
               {/* Header */}
               <div className="px-6 py-4 border-b border-foreground/10 flex items-center justify-between">
-                <span className="text-sm font-mono text-muted-foreground">Edge Network</span>
+                <span className="text-sm font-mono text-muted-foreground">Venture Hubs</span>
                 <span className="flex items-center gap-2 text-xs font-mono text-green-600">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  All operational
+                  Active in all hubs
                 </span>
               </div>
 
@@ -112,7 +111,7 @@ export function InfrastructureSection() {
                         <div className="text-sm text-muted-foreground">{location.region}</div>
                       </div>
                     </div>
-                    <span className="font-mono text-sm text-muted-foreground">{location.latency}</span>
+                    <span className="font-mono text-sm text-muted-foreground">{location.firms}</span>
                   </div>
                 ))}
               </div>

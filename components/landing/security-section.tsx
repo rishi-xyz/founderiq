@@ -6,27 +6,27 @@ import { Shield, Lock, Eye, FileCheck } from "lucide-react";
 const securityFeatures = [
   {
     icon: Shield,
-    title: "SOC 2 Type II",
-    description: "Independently audited security controls with continuous monitoring.",
+    title: "Enterprise-Grade Security",
+    description: "SOC 2 Type II compliance with bank-level security controls and continuous auditing.",
   },
   {
     icon: Lock,
-    title: "End-to-end encryption",
-    description: "AES-256 encryption for data at rest and TLS 1.3 in transit.",
+    title: "Data Encryption",
+    description: "AES-256 encryption for sensitive startup data and financial information at rest and in transit.",
   },
   {
     icon: Eye,
-    title: "Zero-trust architecture",
-    description: "Every request is authenticated and authorized. No exceptions.",
+    title: "Access Controls",
+    description: "Granular permission management and role-based access for your entire investment team.",
   },
   {
     icon: FileCheck,
-    title: "GDPR & HIPAA",
-    description: "Full compliance with data protection and healthcare regulations.",
+    title: "Compliance Ready",
+    description: "GDPR, CCPA, and SOX compliance built-in for institutional investment requirements.",
   },
 ];
 
-const certifications = ["SOC 2", "ISO 27001", "HIPAA", "GDPR", "CCPA"];
+const certifications = ["SOC 2 Type II", "ISO 27001", "GDPR", "CCPA", "SOX Ready"];
 
 export function SecuritySection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -58,14 +58,13 @@ export function SecuritySection() {
               <span className="w-8 h-px bg-foreground/30" />
               Security
             </span>
-            <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Trust is
+            <h2 className="text-4xl lg:text-5xl font-display tracking-tight mb-8">
+              Institutional Security
               <br />
-              non-negotiable.
+              You Can Count On.
             </h2>
-            <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Enterprise-grade security isn&apos;t optional. It&apos;s built into every layer 
-              of our platform, from infrastructure to application.
+            <p className="text-lg text-muted-foreground leading-relaxed mb-12">
+              Sensitive startup data and investment insights require the highest security standards. FounderIQ meets institutional requirements with bank-level encryption and compliance.
             </p>
 
             {/* Certifications */}

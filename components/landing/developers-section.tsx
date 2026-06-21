@@ -5,52 +5,54 @@ import { Copy, Check } from "lucide-react";
 
 const codeExamples = [
   {
-    label: "Install",
-    code: `npm install @optimus/sdk
-
-# or
-yarn add @optimus/sdk
-pnpm add @optimus/sdk`,
-  },
-  {
-    label: "Initialize",
-    code: `import { Optimus } from '@optimus/sdk'
-
-const optimus = new Optimus({
-  apiKey: process.env.OPTIMUS_KEY
-})`,
-  },
-  {
-    label: "Deploy",
-    code: `const app = await optimus.deploy({
-  name: 'my-app',
-  region: 'auto',
-  scaling: {
-    min: 1,
-    max: 100
-  }
+    label: "API Access",
+    code: `const founderiq = new FounderIQ({
+  apiKey: process.env.FOUNDERIQ_API_KEY
 })
 
-console.log('Live at:', app.url)`,
+// Access FounderIQ API
+const startups = await founderiq
+  .getStartups({ limit: 50 })`,
+  },
+  {
+    label: "Analyze Decks",
+    code: `const analysis = 
+  await founderiq.analyzeDeck({
+  fileUrl: 'pitch-deck.pdf',
+  extractInsights: true
+})
+
+console.log(analysis.businessModel)`,
+  },
+  {
+    label: "Generate Memo",
+    code: `const memo = await founderiq
+  .generateInvestmentMemo({
+  startupId: 'startup-id',
+  includeRiskAnalysis: true,
+  format: 'pdf'
+})
+
+// Professional memo ready`,
   },
 ];
 
 const features = [
   { 
-    title: "TypeScript native", 
-    description: "Full type safety with auto-generated types."
+    title: "REST & Webhook APIs", 
+    description: "Simple HTTP APIs and webhooks for real-time startup updates."
   },
   { 
-    title: "Zero config", 
-    description: "Sensible defaults that just work."
+    title: "SDK & Libraries", 
+    description: "TypeScript, Python, and Node.js SDKs for easy integration."
   },
   { 
-    title: "Edge-ready", 
-    description: "Runs anywhere: Node, Deno, Bun, browsers."
+    title: "Webhooks Ready", 
+    description: "Real-time notifications on startup updates, analysis completion, and more."
   },
   { 
-    title: "12KB gzipped", 
-    description: "Lightweight with zero dependencies."
+    title: "Comprehensive Docs", 
+    description: "Complete API documentation with examples and code samples."
   },
 ];
 
@@ -119,16 +121,15 @@ export function DevelopersSection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              For developers
+              For Tech Teams
             </span>
-            <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Built by devs.
+            <h2 className="text-4xl lg:text-5xl font-display tracking-tight mb-8">
+              Integrate FounderIQ
               <br />
-              <span className="text-muted-foreground">For devs.</span>
+              <span className="text-muted-foreground">Into Your Workflow.</span>
             </h2>
-            <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-              A thoughtfully designed SDK that gets out of your way. 
-              Ship faster with intuitive APIs and exceptional documentation.
+            <p className="text-lg text-muted-foreground mb-12 leading-relaxed">
+              Simple APIs and SDKs that let your tech team integrate FounderIQ's AI analysis directly into your investment platform or workflow.
             </p>
             
             {/* Features */}

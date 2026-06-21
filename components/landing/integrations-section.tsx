@@ -3,18 +3,18 @@
 import { useEffect, useState, useRef } from "react";
 
 const integrations = [
-  { name: "GitHub", category: "Version Control" },
-  { name: "Slack", category: "Communication" },
-  { name: "Stripe", category: "Payments" },
-  { name: "PostgreSQL", category: "Database" },
-  { name: "Redis", category: "Cache" },
-  { name: "AWS", category: "Cloud" },
-  { name: "MongoDB", category: "Database" },
-  { name: "Vercel", category: "Hosting" },
-  { name: "Figma", category: "Design" },
-  { name: "Linear", category: "Project Management" },
-  { name: "Notion", category: "Documentation" },
-  { name: "OpenAI", category: "AI/ML" },
+  { name: "Crunchbase", category: "Company Data" },
+  { name: "LinkedIn", category: "Founder Profiles" },
+  { name: "Slack", category: "Team Communication" },
+  { name: "Google Drive", category: "Document Storage" },
+  { name: "Dropbox", category: "File Management" },
+  { name: "Notion", category: "Knowledge Base" },
+  { name: "Salesforce", category: "CRM" },
+  { name: "Zapier", category: "Workflow Automation" },
+  { name: "Gmail", category: "Email Integration" },
+  { name: "Google Sheets", category: "Spreadsheets" },
+  { name: "Microsoft 365", category: "Office Suite" },
+  { name: "Calendar Sync", category: "Meeting Scheduling" },
 ];
 
 export function IntegrationsSection() {
@@ -47,13 +47,13 @@ export function IntegrationsSection() {
             Integrations
             <span className="w-8 h-px bg-foreground/30" />
           </span>
-          <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-6">
-            Works with everything
+          <h2 className="text-4xl lg:text-5xl font-display tracking-tight mb-6">
+            Connect with your
             <br />
-            you already use.
+            entire investment stack.
           </h2>
-          <p className="text-xl text-muted-foreground">
-            200+ pre-built integrations. Connect your entire stack in minutes.
+          <p className="text-lg text-muted-foreground">
+            Integrates with the tools your firm already uses—from data platforms to CRMs to communication tools.
           </p>
         </div>
 

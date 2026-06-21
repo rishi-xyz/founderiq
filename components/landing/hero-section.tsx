@@ -71,7 +71,7 @@ export function HeroSection() {
         {/* Main headline */}
         <div className="mb-12">
           <h1 
-            className={`text-[clamp(3rem,12vw,10rem)] font-display leading-[0.9] tracking-tight transition-all duration-1000 ${
+            className={`text-[clamp(2rem,8vw,6rem)] font-display leading-[0.9] tracking-tight transition-all duration-1000 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >
@@ -104,7 +104,7 @@ export function HeroSection() {
         {/* Description */}
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-end">
           <p 
-            className={`text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl transition-all duration-700 delay-200 ${
+            className={`text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-xl transition-all duration-700 delay-200 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
@@ -146,10 +146,10 @@ export function HeroSection() {
           {[...Array(2)].map((_, i) => (
             <div key={i} className="flex gap-16">
               {[
-                { value: "10,000+", label: "Startups Evaluated", company: "FOUNDERIQ" },
-                { value: "500,000+", label: "Documents Analyzed", company: "FOUNDERIQ" },
-                { value: "50,000+", label: "Founder Interviews", company: "FOUNDERIQ" },
-                { value: "80%", label: "Time Reduction", company: "FOUNDERIQ" },
+                { value: "10,000+", label: "Startups (Projected)", company: "FOUNDERIQ" },
+                { value: "500,000+", label: "Documents (Projected)", company: "FOUNDERIQ" },
+                { value: "50,000+", label: "Interviews (Projected)", company: "FOUNDERIQ" },
+                { value: "80%", label: "Time Savings (Est.)", company: "FOUNDERIQ" },
               ].map((stat) => (
                 <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
                   <span className="text-4xl lg:text-5xl font-display">{stat.value}</span>
