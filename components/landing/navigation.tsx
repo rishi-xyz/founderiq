@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/components/theme-provider";
 
 const navLinks = [
   { name: "Features", href: "#features" },
@@ -13,6 +14,7 @@ const navLinks = [
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, toggleTheme, mounted } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -64,6 +66,19 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            {mounted && (
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-foreground/70 hover:text-foreground transition-colors duration-300 rounded-full hover:bg-foreground/5"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-4 h-4" />
+                ) : (
+                  <Sun className="w-4 h-4" />
+                )}
+              </button>
+            )}
             <a href="#" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
               Sign in
             </a>
@@ -128,6 +143,19 @@ export function Navigation() {
           }`}
           style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
+            {mounted && (
+              <button
+                onClick={toggleTheme}
+                className="p-4 text-foreground hover:bg-foreground/5 transition-colors rounded-full border border-foreground/10"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-5 h-5" />
+                ) : (
+                  <Sun className="w-5 h-5" />
+                )}
+              </button>
+            )}
             <Button 
               variant="outline" 
               className="flex-1 rounded-full h-14 text-base"
