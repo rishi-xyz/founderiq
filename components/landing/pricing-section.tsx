@@ -5,47 +5,49 @@ import { ArrowRight, Check } from "lucide-react";
 
 const plans = [
   {
-    name: "Starter",
-    description: "For individuals and small projects",
-    price: { monthly: 0, annual: 0 },
+    name: "Essentials",
+    description: "For angel investors and individual scouts",
+    price: { monthly: 99, annual: 990 },
     features: [
-      "Up to 3 projects",
-      "1GB storage",
-      "Community support",
-      "Basic analytics",
-      "SSL certificates",
+      "Analyze up to 50 startups/month",
+      "AI pitch deck analysis",
+      "Founder profile generation",
+      "Basic due diligence reports",
+      "Email support",
+      "CSV exports",
     ],
-    cta: "Start free",
+    cta: "Start free trial",
     popular: false,
   },
   {
-    name: "Pro",
-    description: "For growing teams and businesses",
-    price: { monthly: 29, annual: 24 },
+    name: "Professional",
+    description: "For VCs and active investors",
+    price: { monthly: 299, annual: 2990 },
     features: [
-      "Unlimited projects",
-      "100GB storage",
+      "Unlimited startup analysis",
+      "AI founder interviews",
+      "Advanced due diligence",
+      "Investment memo generation",
       "Priority support",
-      "Advanced analytics",
-      "Custom domains",
-      "Team collaboration",
       "API access",
+      "Team collaboration (up to 5 users)",
+      "Custom reports",
     ],
-    cta: "Start trial",
+    cta: "Start free trial",
     popular: true,
   },
   {
-    name: "Enterprise",
-    description: "For large-scale operations",
+    name: "Institutional",
+    description: "For accelerators and large funds",
     price: { monthly: null, annual: null },
     features: [
-      "Everything in Pro",
-      "Unlimited storage",
-      "24/7 dedicated support",
+      "Everything in Professional",
+      "Unlimited team seats",
+      "Advanced API access",
       "Custom integrations",
+      "Dedicated account manager",
       "SLA guarantee",
-      "On-premise option",
-      "Security audit",
+      "White-label option",
       "Custom contracts",
     ],
     cta: "Contact sales",
@@ -64,13 +66,13 @@ export function PricingSection() {
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase block mb-6">
             Pricing
           </span>
-          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight text-foreground mb-6">
-            Simple, transparent
+          <h2 className="font-display text-4xl lg:text-5xl tracking-tight text-foreground mb-6">
+            Plans for every stage
             <br />
-            <span className="text-stroke">pricing</span>
+            of your journey.
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl">
-            Start free and scale as you grow. No hidden fees, no surprises.
+            Start with a free trial. Scale your team as your portfolio grows. Transparent pricing, no surprises.
           </p>
         </div>
 
@@ -102,7 +104,7 @@ export function PricingSection() {
           </span>
           {isAnnual && (
             <span className="ml-2 px-2 py-1 bg-foreground text-primary-foreground text-xs font-mono">
-              Save 17%
+              Save 17% + bonus features
             </span>
           )}
         </div>
@@ -172,9 +174,9 @@ export function PricingSection() {
 
         {/* Bottom Note */}
         <p className="mt-12 text-center text-sm text-muted-foreground">
-          All plans include automatic updates, HTTPS, and DDoS protection.{" "}
+          All plans include SOC 2 compliance, data encryption, and dedicated support.{" "}
           <a href="#" className="underline underline-offset-4 hover:text-foreground transition-colors">
-            Compare all features
+            View detailed comparison
           </a>
         </p>
       </div>
