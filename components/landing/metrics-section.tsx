@@ -46,28 +46,28 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
 
 const metrics = [
   { 
-    value: 2847392, 
-    suffix: "", 
+    value: 10000, 
+    suffix: "+", 
     prefix: "",
-    label: "API requests today",
+    label: "Startups Evaluated",
   },
   { 
-    value: 99, 
-    suffix: ".99%", 
+    value: 500000, 
+    suffix: "+", 
     prefix: "",
-    label: "Uptime this quarter",
+    label: "Documents Analyzed",
   },
   { 
-    value: 23, 
-    suffix: "ms", 
+    value: 50000, 
+    suffix: "+", 
     prefix: "",
-    label: "Average response time",
+    label: "Founder Interviews Processed",
   },
   { 
-    value: 184, 
-    suffix: "", 
+    value: 80, 
+    suffix: "%", 
     prefix: "",
-    label: "Countries served",
+    label: "Time Reduction Achieved",
   },
 ];
 
@@ -101,16 +101,16 @@ export function MetricsSection() {
           <div>
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              Live metrics
+              Impact metrics
             </span>
             <h2
               className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              Performance you
+              Built for high-volume
               <br />
-              can measure.
+              investment teams.
             </h2>
           </div>
           <div className="flex items-center gap-4 font-mono text-sm text-muted-foreground">

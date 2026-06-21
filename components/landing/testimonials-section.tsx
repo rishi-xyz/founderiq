@@ -4,32 +4,32 @@ import { useEffect, useState } from "react";
 
 const testimonials = [
   {
-    quote: "Optimus transformed our deployment pipeline. What used to take hours now happens in seconds.",
-    author: "Sarah Chen",
-    role: "CTO",
-    company: "Meridian Labs",
-    metric: "10x faster deployments",
+    quote: "FounderIQ reduced our startup review cycle from weeks to days. Our team now evaluates 10x more opportunities without expanding headcount.",
+    author: "Michael Thompson",
+    role: "Venture Partner",
+    company: "Horizon Ventures",
+    metric: "10x more startups evaluated",
   },
   {
-    quote: "The developer experience is unmatched. Our team's productivity has never been higher.",
-    author: "Marcus Webb",
-    role: "Engineering Lead",
-    company: "Flux Systems",
-    metric: "40% more features shipped",
+    quote: "The AI founder interviews give us insights that manual meetings never would. We're making better investment decisions faster.",
+    author: "Jennifer Lee",
+    role: "Partner",
+    company: "Angel Capital Network",
+    metric: "80% faster due diligence",
   },
   {
-    quote: "Finally, infrastructure that scales with our ambition. Zero downtime since we switched.",
-    author: "Elena Rodriguez",
-    role: "VP Engineering",
-    company: "Beacon AI",
-    metric: "99.99% uptime",
+    quote: "Investment memos that used to take our analysts two days now generate in minutes. The quality is institutional-grade.",
+    author: "David Chen",
+    role: "Managing Director",
+    company: "TechFund Capital",
+    metric: "15 hours saved per deal",
   },
   {
-    quote: "The integrations are seamless. We connected our entire stack in a single afternoon.",
-    author: "James Liu",
-    role: "Founder",
-    company: "Prism Analytics",
-    metric: "50+ integrations used",
+    quote: "As an accelerator director, screening hundreds of applications was impossible. FounderIQ makes it manageable and intelligent.",
+    author: "Rachel Martinez",
+    role: "Executive Director",
+    company: "StartupAccel",
+    metric: "500+ apps processed",
   },
 ];
 
@@ -148,7 +148,7 @@ export function TestimonialsSection() {
         <div className="flex gap-16 items-center marquee">
           {[...Array(2)].map((_, setIdx) => (
             <div key={setIdx} className="flex gap-16 items-center shrink-0">
-              {["Meridian Labs", "Flux Systems", "Beacon AI", "Prism Analytics", "Nova Tech", "Quantum Corp", "Atlas Digital", "Vertex Labs"].map(
+              {["Horizon Ventures", "Angel Capital Network", "TechFund Capital", "StartupAccel", "NextGen Ventures", "Innovate Fund", "Capital Partners", "Growth Equity"].map(
                 (company) => (
                   <span
                     key={`${setIdx}-${company}`}

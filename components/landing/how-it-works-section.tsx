@@ -5,38 +5,46 @@ import { useEffect, useRef, useState } from "react";
 const steps = [
   {
     number: "I",
-    title: "Connect your tools",
-    description: "Integrate with your existing stack in minutes. We support 200+ data sources out of the box.",
-    code: `import { optimus } from '@optimus/core'
+    title: "Upload Startup Materials",
+    description: "Submit pitch decks, founder information, financials, and demo videos. FounderIQ ingests and prepares everything automatically.",
+    code: `// Upload startup materials
+const startup = {
+  name: 'TechStartup Inc',
+  deck: 'pitch-deck.pdf',
+  financials: 'cap-table.xlsx',
+  founders: ['data.json'],
+  demo: 'video.mp4'
+}
 
-optimus.connect({
-  source: 'your-database',
-  sync: true
-})`,
+// Materials ingested & ready`,
   },
   {
     number: "II",
-    title: "Build your workflow",
-    description: "Design powerful automations with our visual builder or write code directly.",
-    code: `optimus.workflow('process', {
-  trigger: 'event',
-  actions: [
-    'validate',
-    'transform', 
-    'deliver'
-  ]
-})`,
+    title: "AI Analyzes Everything",
+    description: "FounderIQ extracts insights, identifies risks, evaluates traction, and structures data automatically using advanced AI analysis.",
+    code: `// AI analysis runs instantly
+const analysis = {
+  pitchDeckInsights: 'extracted',
+  founderProfiles: 'completed',
+  marketOpportunity: 'analyzed',
+  riskFactors: 'identified',
+  tractionSignals: 'evaluated'
+}
+
+// Results ready in dashboard`,
   },
   {
     number: "III",
-    title: "Ship to production",
-    description: "Deploy globally with zero configuration. Your app goes live in under 30 seconds.",
-    code: `optimus.deploy({
-  target: 'production',
-  regions: 'auto'
+    title: "Generate Investment Memos",
+    description: "Receive complete diligence reports, risk analysis, and investment memos in professional format ready to share with your team.",
+    code: `// Generate investment memo
+const memo = await founderIQ.generateMemo({
+  startup: 'startup-id',
+  format: 'professional',
+  includeRiskAnalysis: true
 })
 
-// Deployed to 12 regions`,
+// Memo ready - Share with team`,
   },
 ];
 
@@ -88,16 +96,16 @@ export function HowItWorksSection() {
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6">
             <span className="w-8 h-px bg-background/30" />
-            Process
+            Workflow
           </span>
           <h2
             className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Three steps.
+            From Startup Submission to Investment Decision.
             <br />
-            <span className="text-background/50">Infinite possibilities.</span>
+            <span className="text-background/50">Complete in minutes, not weeks.</span>
           </h2>
         </div>
 

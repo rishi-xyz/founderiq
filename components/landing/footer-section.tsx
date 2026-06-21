@@ -6,25 +6,25 @@ import { AnimatedWave } from "./animated-wave";
 const footerLinks = {
   Product: [
     { name: "Features", href: "#features" },
-    { name: "How it works", href: "#how-it-works" },
+    { name: "How it Works", href: "#how-it-works" },
     { name: "Pricing", href: "#pricing" },
-    { name: "Integrations", href: "#integrations" },
+    { name: "Use Cases", href: "#" },
   ],
-  Developers: [
-    { name: "Documentation", href: "#developers" },
+  Resources: [
+    { name: "Documentation", href: "#" },
     { name: "API Reference", href: "#" },
-    { name: "SDK", href: "#developers" },
-    { name: "Status", href: "#" },
+    { name: "Integration Guide", href: "#" },
+    { name: "Status Page", href: "#" },
   ],
   Company: [
-    { name: "About", href: "#" },
+    { name: "About FounderIQ", href: "#" },
     { name: "Blog", href: "#" },
     { name: "Careers", href: "#", badge: "Hiring" },
     { name: "Contact", href: "#" },
   ],
   Legal: [
-    { name: "Privacy", href: "#" },
-    { name: "Terms", href: "#" },
+    { name: "Privacy Policy", href: "#" },
+    { name: "Terms of Service", href: "#" },
     { name: "Security", href: "#security" },
   ],
 };
@@ -50,12 +50,12 @@ export function FooterSection() {
             {/* Brand Column */}
             <div className="col-span-2">
               <a href="#" className="inline-flex items-center gap-2 mb-6">
-                <span className="text-2xl font-display">Optimus</span>
+                <span className="text-2xl font-display">FounderIQ</span>
                 <span className="text-xs text-muted-foreground font-mono">TM</span>
               </a>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
-                The platform for teams who ship. Build, deploy, and scale with unprecedented velocity.
+                The AI-powered venture intelligence platform. Screen startups faster, make better investment decisions, and close deals with confidence.
               </p>
 
               {/* Social Links */}
@@ -102,13 +102,13 @@ export function FooterSection() {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            2025 Optimus. All rights reserved.
+            2025 FounderIQ. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              All systems operational
+              Platform operational
             </span>
           </div>
         </div>

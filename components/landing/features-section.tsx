@@ -5,26 +5,26 @@ import { useEffect, useRef, useState } from "react";
 const features = [
   {
     number: "01",
-    title: "Instant Deployment",
-    description: "Push to production in seconds. Our edge network ensures your applications load instantly, anywhere in the world.",
+    title: "AI Pitch Deck Analysis",
+    description: "Automatically extract business models, market opportunities, traction signals, risks, and competitive advantages from startup pitch decks in seconds.",
     visual: "deploy",
   },
   {
     number: "02",
-    title: "AI-Native Workflows",
-    description: "Build intelligent applications with built-in AI capabilities. From inference to training, everything scales automatically.",
+    title: "Founder Intelligence Profiles",
+    description: "Build comprehensive founder profiles with experience analysis, founder-market fit indicators, execution signals, and credibility assessments.",
     visual: "ai",
   },
   {
     number: "03",
-    title: "Real-time Collaboration",
-    description: "Work together seamlessly. Live preview, instant feedback, and version control that actually makes sense.",
+    title: "AI Founder Interviews",
+    description: "Conduct structured founder interviews powered by AI and generate transcripts, summaries, and investor-ready scorecards automatically.",
     visual: "collab",
   },
   {
     number: "04",
-    title: "Enterprise Security",
-    description: "Bank-grade encryption, SOC 2 compliance, and granular access controls. Your data stays yours.",
+    title: "Due Diligence Workspace",
+    description: "Centralize startup evaluation, risk assessment, market research, team analysis, and competitive intelligence in one powerful workspace.",
     visual: "security",
   },
 ];
@@ -330,9 +330,9 @@ export function FeaturesSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Everything you need.
+            Everything Your Investment Team Needs.
             <br />
-            <span className="text-muted-foreground">Nothing you don&apos;t.</span>
+            <span className="text-muted-foreground">In one powerful platform.</span>
           </h2>
         </div>
 
