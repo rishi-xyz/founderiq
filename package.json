@@ -3,7 +3,11 @@
   "private": true,
   "scripts": {
     "dev": "turbo dev",
+    "dev:api" : "turbo dev --filter=api-gateway",
     "build": "turbo build",
+    "build:api": "turbo build --filter=api-gateway",
+    "test": "turbo test",
+    "test:api": "turbo test --filter=api-gateway",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
