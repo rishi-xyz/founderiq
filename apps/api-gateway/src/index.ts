@@ -1,5 +1,5 @@
 import Bun from "bun"
-import { corsHeaders } from "./middleware/cors";
+import { corsHeaders, handleCors } from "./middleware/cors";
 import { routerv1 } from "./routes";
 
 const port = process.env.PORT || 5000;
@@ -7,6 +7,10 @@ const port = process.env.PORT || 5000;
 Bun.serve({
     port,
     async fetch(req) {
+        // CORS
+        const corsResponse = handleCors(req);
+        if (corsResponse) return corsResponse;
+
         const origin_  = req.headers.get('Origin');
         // Routing
         try {
