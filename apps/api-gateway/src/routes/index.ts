@@ -1,5 +1,5 @@
 import { pingRoute } from "./ping";
-import { Router } from "./router";
+import { Router } from "./router/router";
 
 /**
  * Singleton v1 router instance.

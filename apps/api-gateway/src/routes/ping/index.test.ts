@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { Router } from "../router";
+import { Router } from "../router/router";
 import { pingRoute } from "./index";
 
 describe("pingRoute", () => {

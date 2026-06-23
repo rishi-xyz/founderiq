@@ -1,4 +1,4 @@
-import type { Router } from "../router";
+import type { Router } from "../router/router";
 
 /**
  * Register a `GET /ping` health-check endpoint.
