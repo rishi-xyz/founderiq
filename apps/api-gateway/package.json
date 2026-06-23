@@ -4,20 +4,23 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev":"bun --watch run src/index.ts",
-    "build":"bun build src/index.ts --outdir dist --target bun",
-    "build:run" : "bun run build && bun run dist/index.js",
-    "start":"bun run src/index.ts",
+    "dev": "bun --watch run src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "build:run": "bun run build && bun run dist/index.js",
+    "start": "bun run src/index.ts",
     "test": "bun test"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "prisma": "^7.8.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@prisma/client": "^7.8.0",
     "@types/node": "^26.0.0",
+    "dotenv": "^17.4.2",
     "node": "^26.3.1"
   }
 }
