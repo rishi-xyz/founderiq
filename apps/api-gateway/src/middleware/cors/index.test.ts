@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "bun:test";
-import { corsHeaders, handleCors } from "./cors";
+import { corsHeaders, handleCors } from ".";
 
 describe("corsHeaders", () => {
   const defaultOrigin = "http://localhost:3001";
