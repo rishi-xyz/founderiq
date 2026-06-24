@@ -1,3 +1,7 @@
+// Database schema for the api-gateway.
+// PostgreSQL via Prisma ORM — manages organizations, users, startups,
+// interviews, candidates, API keys, webhooks, and related entities.
+
 generator client {
   provider = "prisma-client"
   output   = "./generated/"
@@ -8,6 +12,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// Organization classification for investment firms.
+// Values: Venture_Capital, Angel_Network, Accelerator, Others
 enum OrganizationType {
   Venture_Capital
   Angel_Network
@@ -15,12 +21,16 @@ enum OrganizationType {
   Others
 }
 
+// Role assigned to a user within an organization.
+// Values: OWNER, ADMIN, ANALYST
 enum UserRole {
   OWNER
   ADMIN
   ANALYST
 }
 
+// Lifecycle status of a startup within the pipeline.
+// Values: NEW, ANALYZING, INTERVIEWING, REVIEW, COMPLETED, PASSED, INVESTED
 enum StartupStatus {
   NEW
   ANALYZING
@@ -31,6 +41,8 @@ enum StartupStatus {
   INVESTED
 }
 
+// Upload progress state for documents.
+// Values: PENDING, UPLOADING, PROCESSING, COMPLETE, FAILED
 enum uploadStatus {
   PENDING
   UPLOADING
@@ -39,12 +51,16 @@ enum uploadStatus {
   FAILED
 }
 
+// Current state of an interview for a startup.
+// Values: PENDING, IN_PROGRESS, COMPLETED
 enum InterviewStatus {
   PENDING
   IN_PROGRESS
   COMPLETED
 }
 
+// Lifecycle state of an individual interview session.
+// Values: PENDING, IN_PROGRESS, COMPLETED, EXPIRED
 enum SessionStatus {
   PENDING
   IN_PROGRESS
@@ -52,6 +68,9 @@ enum SessionStatus {
   EXPIRED
 }
 
+// Screening and interview pipeline state for a candidate.
+// Values: RECIEVED, ANALYZING, ANALYZED, INTERVIEW_SCHEDULED,
+//         INTERVIEW_IN_PROGRESS, COMPLETED, FAILED
 enum CandidateStatus {
   RECIEVED
   ANALYZING
@@ -62,6 +81,8 @@ enum CandidateStatus {
   FAILED
 }
 
+// Dimension of analysis performed on a startup.
+// Values: MARKET, COMPETITOR, FOUNDER, EXECUTION, BUSINESS_MODEL, RISK
 enum AnalysisType {
   MARKET
   COMPETITOR
@@ -71,11 +92,21 @@ enum AnalysisType {
   RISK
 }
 
+// An investment firm or fund registered on the platform.
+// Serves as the top-level tenant — owns users, startups, and configuration.
+//
+// Mapped table: organizations
+// Relations:    User, Startup, Candidate, ApiKey, ApiRequestLog,
+//               WebhookEndPoint, WebhookDelivery
 model Organization {
+  // UUID primary key
   id   String           @id @default(uuid())
+  // Display name of the firm
   name String
+  // Categorization: Venture_Capital, Angel_Network, Accelerator, Others
   type OrganizationType
 
+  // Inverse relations
   users             User[]
   startups          Startup[]
   candidates        Candidate[]
@@ -90,17 +121,29 @@ model Organization {
   @@map("organizations")
 }
 
+// A member of an organization who can authenticate and interact with the API.
+//
+// Mapped table: users
+// Indexes:      organization_id
+// Relations:    Organization (N:1), Session (1:N)
 model User {
+  // UUID primary key
   id       String  @id @default(uuid())
+  // Full display name
   name     String
+  // Unique login email
   email    String  @unique
+  // Bcrypt-hashed password (nullable for SSO-only accounts)
   password String? @map("password")
 
+  // Role within the organization (default: ANALYST)
   role UserRole @default(ANALYST)
 
+  // FK → Organization
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // Active auth sessions
   sessions Session[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -110,34 +153,61 @@ model User {
   @@map("users")
 }
 
+// An authenticated user session identified by a refresh token.
+//
+// Mapped table: sessions
+// Relations:    User (N:1)
 model Session {
+  // UUID primary key
   id     String @id @default(uuid())
+  // FK → User
   userId String @map("user_id")
 
+  // Unique refresh token used to issue new access tokens
   refreshToken String @unique @map("refresh_token")
 
+  // Owning user
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Session expiry timestamp
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("sessions")
 }
 
+// A startup company being evaluated by the organization.
+// Tracks the startup through the pipeline from NEW → INVESTED / PASSED.
+//
+// Mapped table: startup
+// Indexes:      organization_id, status, industry
+// Relations:    Organization (N:1), Document (1:N), Interview (1:N),
+//               Analysis (1:N), InvestmentMemo (1:N), Candidate (1:N)
 model Startup {
+  // UUID primary key
   id            String        @id @default(uuid())
+  // Company name
   name          String
+  // Company website URL
   website       String?
+  // Industry classification
   industry      String?
+  // Funding stage (e.g. Pre-seed, Seed, Series A)
   stage         String?
+  // HQ location
   location      String?
+  // Short company description
   description   String?
+  // Total funding raised (stored as BigInt for large values)
   fundingRaised BigInt        @default(0) @map("funding_raised")
+  // Pipeline status (default: NEW)
   status        StartupStatus @default(NEW)
 
+  // FK → Organization (nullable for soft-delete scenarios)
   organizationId String        @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // Inverse relations
   documents       Document[]
   interviews      Interview[]
   analyses        Analysis[]
@@ -153,13 +223,24 @@ model Startup {
   @@map("startup")
 }
 
+// A file uploaded for a startup (e.g. pitch deck, financials).
+//
+// Mapped table: document
+// Indexes:      startup_id
+// Relations:    Startup (N:1)
 model Document {
+  // UUID primary key
   id           String       @id @default(uuid())
+  // MIME type or file extension
   fileType     String       @map("file_type")
+  // URL to the uploaded file (nullable until upload completes)
   fileUrl      String?      @map("file_url")
+  // Original file name
   fileName     String?      @map("file_name")
+  // Upload progress (default: PENDING)
   uploadStatus uploadStatus @default(PENDING) @map("upload_status")
 
+  // FK → Startup
   startupId String  @map("startup_id")
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -169,14 +250,24 @@ model Document {
   @@map("document")
 }
 
+// An interview round for a startup, comprising one or more sessions.
+//
+// Mapped table: interview
+// Indexes:      startup_id
+// Relations:    Startup (N:1), InterviewSession (1:N)
 model Interview {
+  // UUID primary key
   id           String          @id @default(uuid())
+  // Interview lifecycle status (default: PENDING)
   status       InterviewStatus @default(PENDING)
+  // Aggregate score computed after all sessions complete
   overallScore Int?            @map("overall_score")
 
+  // FK → Startup
   startupId String  @map("startup_id")
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
+  // Individual interview sessions (one per candidate)
   interviewSessions InterviewSession[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -186,17 +277,29 @@ model Interview {
   @@map("interview")
 }
 
+// A single interview session for a specific candidate within an interview round.
+// Candidates join via a unique token.
+//
+// Mapped table: interview_session
+// Indexes:      candidate_id
+// Relations:    Candidate (N:1), Interview (N:1)
 model InterviewSession {
+  // UUID primary key
   id        String        @id @default(uuid())
+  // Hashed token used for candidate authentication
   tokenHash String        @map("token_hash")
+  // Session lifecycle status (default: PENDING)
   status    SessionStatus @default(PENDING)
 
+  // FK → Candidate
   candidateId String    @map("candidate_id")
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 
+  // FK → Interview
   interviewId String    @map("interview_id")
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 
+  // Timestamps for session lifecycle
   expriresAt  DateTime @map("expires_at")
   startedAt   DateTime @map("started_at")
   completedAt DateTime @map("completed_at")
@@ -206,22 +309,38 @@ model InterviewSession {
   @@map("interview_session")
 }
 
+// A person being evaluated as part of a startup's screening process.
+// Candidates can be sourced externally and linked to job postings via externalId.
+//
+// Mapped table: candidate
+// Indexes:      organization_id, startup_id, (organization_id, external_id)
+// Relations:    Organization (N:1), Startup (N:1), InterviewSession (1:N)
 model Candidate {
+  // UUID primary key
   id             String  @id @default(uuid())
+  // External identifier from an ATS or sourcing platform
   externalId     String? @map("external_id")
+  // Applicant's full name
   applicantName  String? @map("applicant_name")
+  // Applicant's email address
   applicantEmail String? @map("applicant_email")
+  // Company or startup name the candidate is associated with
   companyName    String  @map("company_name")
 
+  // Arbitrary JSON metadata from the sourcing pipeline
   metadata Json            @map("{}")
+  // Screening pipeline status (default: RECIEVED)
   status   CandidateStatus @default(RECIEVED)
 
+  // FK → Organization
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // FK → Startup
   startupId String  @map("startup_id")
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
+  // Interview sessions assigned to this candidate
   interviewSession InterviewSession[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -233,12 +352,22 @@ model Candidate {
   @@map("candidate")
 }
 
+// A scored analysis result for a startup across a specific dimension.
+//
+// Mapped table: analyses
+// Indexes:      startup_id, analysis_type
+// Relations:    Startup (N:1)
 model Analysis {
+  // UUID primary key
   id           String  @id @default(uuid())
+  // Analysis dimension (matches AnalysisType enum values)
   analysisType String  @map("analysis_type")
+  // Free-form analysis content or report
   content      String?
+  // Numeric score (0–100 or similar scale)
   score        Int?
 
+  // FK → Startup
   startupId String  @map("startup_id")
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -249,11 +378,20 @@ model Analysis {
   @@map("analyses")
 }
 
+// Investment memorandum summarizing the investment thesis for a startup.
+//
+// Mapped table: investment_memo
+// Indexes:      startup_id
+// Relations:    Startup (N:1)
 model InvestmentMemo {
+  // UUID primary key
   id             String  @id @default(uuid())
+  // Investment recommendation (e.g. Invest, Pass, TBD)
   recommendation String?
+  // Full markdown or structured memo content
   memoContent    String? @map("memo_content")
 
+  // FK → Startup
   startupId String  @map("startup_id")
   startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
 
@@ -264,17 +402,32 @@ model InvestmentMemo {
   @@map("investment_memo")
 }
 
+// An API key issued to an organization for programmatic access.
+// Only the key prefix, hash, and last-four are stored — the raw key is
+// shown once at creation.
+//
+// Mapped table: apikey
+// Indexes:      organization_id
+// Relations:    Organization (N:1), ApiRequestLog (1:N)
 model ApiKey {
+  // UUID primary key
   id        String   @id @default(uuid())
+  // Human-readable label identifying this key
   name      String
+  // First few characters of the key for identification
   keyPrefix String   @map("key_prefix")
+  // Bcrypt-style hash of the full key for authentication
   keyHash   String   @map("key_hash")
+  // Last four characters for UI display
   lastFour  String   @map("last_four")
+  // Permission scopes assigned to this key
   scopes    String[]
 
+  // FK → Organization
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // Requests made with this key
   requestLog ApiRequestLog[]
 
   lastUsedAt DateTime? @map("last_used_at")
@@ -285,16 +438,28 @@ model ApiKey {
   @@map("apikey")
 }
 
+// Audit log of every API request made by an organization or API key.
+//
+// Mapped table: api_request_log
+// Indexes:      organization_id, api_key_id
+// Relations:    Organization (N:1), ApiKey (N:1)
 model ApiRequestLog {
+  // UUID primary key
   id         String @id @default(uuid())
+  // HTTP method (GET, POST, PUT, DELETE, etc.)
   method     String
+  // Request URL path
   path       String
+  // HTTP response status code
   status     Int
+  // Request duration in milliseconds
   durationMs Int?   @map("duration_ms")
 
+  // FK → Organization (nullable for unauthenticated requests)
   organizationId String?       @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // FK → ApiKey (nullable for session-authenticated requests)
   apikeyId String? @map("api_key_id")
   apikey   ApiKey? @relation(fields: [apikeyId], references: [id], onDelete: Cascade)
 
@@ -305,16 +470,28 @@ model ApiRequestLog {
   @@map("api_request_log")
 }
 
+// A registered webhook endpoint that receives event notifications.
+// Each endpoint has a secret for HMAC signature verification.
+//
+// Mapped table: webhook_endpoint
+// Relations:    Organization (N:1), WebhookDelivery (1:N)
 model WebhookEndPoint {
+  // UUID primary key
   id     String   @id @default(uuid())
+  // Target URL that receives webhook payloads
   url    String
+  // HMAC signing secret for payload verification
   secret String
+  // Array of event types this endpoint subscribes to
   events String[]
+  // Whether the endpoint is accepting deliveries (default: true)
   active Boolean  @default(true)
 
+  // FK → Organization
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  // Delivery attempts sent to this endpoint
   webhookDeliveries WebhookDelivery[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -322,17 +499,31 @@ model WebhookEndPoint {
   @@map("webhook_endpoint")
 }
 
+// A single webhook delivery attempt to a registered endpoint.
+// Records the event, payload, and response for observability.
+//
+// Mapped table: webhook_delivery
+// Indexes:      organization_id, endpoint_id
+// Relations:    WebhookEndPoint (N:1), Organization (N:1)
 model WebhookDelivery {
+  // UUID primary key
   id             String  @id @default(uuid())
+  // Event type that triggered the delivery
   eventType      String  @map("event_type")
+  // JSON payload sent to the endpoint
   payload        Json
+  // HTTP status returned by the endpoint (null if not reached)
   responseStatus Int?    @map("response_status")
+  // Whether the delivery was acknowledged as successful (default: false)
   success        Boolean @default(false)
+  // Error message if the delivery failed
   error          String?
 
+  // FK → WebhookEndPoint
   endpointId String          @map("endpoint_id")
   endpoint   WebhookEndPoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
 
+  // FK → Organization
   organizationId String       @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
