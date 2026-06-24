@@ -1,24 +1,344 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "./generated/"
-  runtime = "bun"
+  runtime  = "bun"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+enum OrganizationType {
+  Venture_Capital
+  Angel_Network
+  Accelerator
+  Others
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  ANALYST
+}
+
+enum StartupStatus {
+  NEW
+  ANALYZING
+  INTERVIEWING
+  REVIEW
+  COMPLETED
+  PASSED
+  INVESTED
+}
+
+enum uploadStatus {
+  PENDING
+  UPLOADING
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
+enum InterviewStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum SessionStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  EXPIRED
+}
+
+enum CandidateStatus {
+  RECIEVED
+  ANALYZING
+  ANALYZED
+  INTERVIEW_SCHEDULED
+  INTERVIEW_IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum AnalysisType {
+  MARKET
+  COMPETITOR
+  FOUNDER
+  EXECUTION
+  BUSINESS_MODEL
+  RISK
+}
+
+model Organization {
+  id   String           @id @default(uuid())
+  name String
+  type OrganizationType
+
+  users             User[]
+  startups          Startup[]
+  candidates        Candidate[]
+  apiKeys           ApiKey[]
+  requestLog        ApiRequestLog[]
+  webhookEndpoints  WebhookEndPoint[]
+  webhookDeliveries WebhookDelivery[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("organizations")
+}
 
 model User {
-  id        String       @id  @default(uuid())
-  name      String
-  email     String    @unique
-  password  String?   @map("password_hash")
-  role      String    @default("analyst")
+  id       String  @id @default(uuid())
+  name     String
+  email    String  @unique
+  password String? @map("password")
 
+  role UserRole @default(ANALYST)
+
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  sessions Session[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@map("users")
+}
+
+model Session {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+
+  refreshToken String @unique @map("refresh_token")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("sessions")
+}
+
+model Startup {
+  id            String        @id @default(uuid())
+  name          String
+  website       String?
+  industry      String?
+  stage         String?
+  location      String?
+  description   String?
+  fundingRaised BigInt        @default(0) @map("funding_raised")
+  status        StartupStatus @default(NEW)
+
+  organizationId String        @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  documents       Document[]
+  interviews      Interview[]
+  analyses        Analysis[]
+  investmentMemos InvestmentMemo[]
+  candidates      Candidate[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([industry])
+  @@map("startup")
+}
+
+model Document {
+  id           String       @id @default(uuid())
+  fileType     String       @map("file_type")
+  fileUrl      String?      @map("file_url")
+  fileName     String?      @map("file_name")
+  uploadStatus uploadStatus @default(PENDING) @map("upload_status")
+
+  startupId String  @map("startup_id")
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([startupId])
+  @@map("document")
+}
+
+model Interview {
+  id           String          @id @default(uuid())
+  status       InterviewStatus @default(PENDING)
+  overallScore Int?            @map("overall_score")
+
+  startupId String  @map("startup_id")
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  interviewSessions InterviewSession[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([startupId])
+  @@map("interview")
+}
+
+model InterviewSession {
+  id        String        @id @default(uuid())
+  tokenHash String        @map("token_hash")
+  status    SessionStatus @default(PENDING)
+
+  candidateId String    @map("candidate_id")
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  interviewId String    @map("interview_id")
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  expriresAt  DateTime @map("expires_at")
+  startedAt   DateTime @map("started_at")
+  completedAt DateTime @map("completed_at")
+  createdAt   DateTime @map("created_at")
+
+  @@index([candidateId])
+  @@map("interview_session")
+}
+
+model Candidate {
+  id             String  @id @default(uuid())
+  externalId     String? @map("external_id")
+  applicantName  String? @map("applicant_name")
+  applicantEmail String? @map("applicant_email")
+  companyName    String  @map("company_name")
+
+  metadata Json            @map("{}")
+  status   CandidateStatus @default(RECIEVED)
+
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  startupId String  @map("startup_id")
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  interviewSession InterviewSession[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([organizationId])
+  @@index([startupId])
+  @@index([organizationId, externalId])
+  @@map("candidate")
+}
+
+model Analysis {
+  id           String  @id @default(uuid())
+  analysisType String  @map("analysis_type")
+  content      String?
+  score        Int?
+
+  startupId String  @map("startup_id")
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([startupId])
+  @@index([analysisType])
+  @@map("analyses")
+}
+
+model InvestmentMemo {
+  id             String  @id @default(uuid())
+  recommendation String?
+  memoContent    String? @map("memo_content")
+
+  startupId String  @map("startup_id")
+  startup   Startup @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([startupId])
+  @@map("investment_memo")
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  name      String
+  keyPrefix String   @map("key_prefix")
+  keyHash   String   @map("key_hash")
+  lastFour  String   @map("last_four")
+  scopes    String[]
+
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  requestLog ApiRequestLog[]
+
+  lastUsedAt DateTime? @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
+  createdAt  DateTime  @default(now())
+
+  @@index([organizationId])
+  @@map("apikey")
+}
+
+model ApiRequestLog {
+  id         String @id @default(uuid())
+  method     String
+  path       String
+  status     Int
+  durationMs Int?   @map("duration_ms")
+
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  apikeyId String? @map("api_key_id")
+  apikey   ApiKey? @relation(fields: [apikeyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId])
+  @@index([apikeyId])
+  @@map("api_request_log")
+}
+
+model WebhookEndPoint {
+  id     String   @id @default(uuid())
+  url    String
+  secret String
+  events String[]
+  active Boolean  @default(true)
+
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  webhookDeliveries WebhookDelivery[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("webhook_endpoint")
+}
+
+model WebhookDelivery {
+  id             String  @id @default(uuid())
+  eventType      String  @map("event_type")
+  payload        Json
+  responseStatus Int?    @map("response_status")
+  success        Boolean @default(false)
+  error          String?
+
+  endpointId String          @map("endpoint_id")
+  endpoint   WebhookEndPoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId])
+  @@index([endpointId])
+  @@map("webhook_delivery")
 }
