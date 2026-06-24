@@ -1,21 +1,19 @@
-import type { Router } from "../router/router";
+import { Elysia } from "elysia"
 
 /**
- * Register a `GET /ping` health-check endpoint.
+ * Elysia plugin registering a `GET /api/v1/ping` health-check endpoint.
  *
- * @param router - The router instance to register the route on
  * @example
  * import { routerv1 } from "../index";
- * pingRoute(routerv1);
+ * routerv1.use(pingRoute);
  *
- * // GET /ping
+ * // GET /api/v1/ping
  * // → { "ok": true, "reponse": "pong" }
  */
-export function pingRoute(router: Router): void {
-    router.get('/ping', async () => {
-        return Response.json({
-            ok: true,
-            reponse: "pong"
-        });
-    });
-}
+export const pingRoute = new Elysia()
+  .get("/ping", () => {
+    return {
+      ok: true,
+      reponse: "pong",
+    }
+  })

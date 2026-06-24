@@ -1,66 +1,53 @@
-import Bun from "bun"
-import { corsHeaders, handleCors } from "./middleware";
-import { routerv1 } from "./routes";
+import { Elysia } from "elysia"
+import { cors } from "@elysiajs/cors"
+import { routerv1 } from "./routes"
+import { ApiError } from "./middleware"
 
 const port = process.env.PORT || 5000;
 
-Bun.serve({
-    port,
-    async fetch(req) {
-        // CORS
-        const corsResponse = handleCors(req);
-        if (corsResponse) return corsResponse;
+const allowedOrigins = (process.env.PLATFORM_URL || 'http://localhost:3001').split(',');
 
-        const origin_  = req.headers.get('Origin');
+const app = new Elysia()
+  .use(cors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 86400,
+  }))
+  .onError(({ code, error, set }) => {
+    if (error instanceof ApiError) {
+      set.status = error.status;
+      return {
+        ok: false,
+        error: { code: error.code, message: error.message },
+      }
+    }
 
-        //TODO: Rate limiting
+    if (code === "NOT_FOUND") {
+      set.status = 404;
+      return {
+        ok: false,
+        error: { code: "not_found", message: "Route Not Found." },
+      }
+    }
 
-        // Routing
-        try {
-            const response_ = await routerv1.dispatch(req);
-            if (response_) {
-                const newHeaders = new Headers(response_.headers);
-                for (const [key,value] of Object.entries(corsHeaders(origin_))) {
-                    if (!newHeaders.has(key)) newHeaders.set(key,value);
-                }
-                return new Response(response_.body, {
-                    status: response_.status,
-                    headers: newHeaders,
-                });
-            }
-        } catch (error) {
-            return new Response(JSON.stringify({
-                ok: false,
-                error : {
-                    code: "invalid_route",
-                    message : "Route Invalid."
-                }
-            }),{
-                status : 401,
-                headers : {
-                    ...corsHeaders(origin_),
-                    'Content-Type':'application/json',
-                }
-            })
-        }
+    const message =
+      process.env.NODE_ENV === "production"
+        ? "An unexpected error has occurred."
+        : error instanceof Error
+          ? error.message
+          : String(error)
 
-        // 404
-        return new Response(
-            JSON.stringify({ 
-                ok: false,
-                error: {
-                    code: "not_found",
-                    message: "Route Not Found."
-                }
-            }),{
-                status: 404,
-                headers : {
-                    ...corsHeaders(origin_),
-                    'Content-Type':'application/json',
-                }
-            },
-        );
-    },
-})
+    console.error("[ERROR]", error instanceof Error ? error.message : String(error))
+
+    set.status = 500
+    return {
+      ok: false,
+      error: { code: "internal_error", message },
+    }
+  })
+  .group("/api", app => app.use(routerv1))
+  .listen(port)
 
 console.log(`founderIQ API gateway running on port: ${port}`);

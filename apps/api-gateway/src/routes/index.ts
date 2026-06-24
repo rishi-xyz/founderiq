@@ -1,18 +1,17 @@
-import { pingRoute } from "./ping";
-import { Router } from "./router/router";
+import { Elysia } from "elysia"
+import { pingRoute } from "./ping"
+import { AuthRoute } from "./auth"
 
 /**
- * Singleton v1 router instance.
- * Import this in route modules to register endpoints.
- *
+ * v1 API router — all routes are under `/api/v1/*`.
+ * Create additional versions by adding another group:
  * @example
- * // src/routes/users/index.ts
- * import { routerv1 } from "../index";
- *
- * routerv1.get("/users", async () => {
- *   return Response.json({ users: [] });
- * });
+ * export const api = new Elysia({ prefix: "/api" })
+ *   .use(routerv1)
+ *   .use(routerv2);
+ * export const routerv2 = new Elysia().group("/v2", app => app.use(...));
  */
-export const routerv1 = new Router();
-
-pingRoute(routerv1);
+export const routerv1 = new Elysia()
+  .group("/v1", app =>
+    app.use(pingRoute).use(AuthRoute)
+  )
