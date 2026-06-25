@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "turbo dev",
-    "dev:api" : "turbo dev --filter=api-gateway",
+    "dev:api": "turbo dev --filter=api-gateway",
     "build": "turbo build",
     "build:api": "turbo build --filter=api-gateway",
     "test": "turbo test",
@@ -19,5 +19,8 @@
   "packageManager": "bun@1.3.10",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.49"
   }
 }

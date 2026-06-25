@@ -1,31 +1,25 @@
 {
   "name": "api-gateway",
-  "module": "index.ts",
+  "version": "0.1.0",
+  "module": "src/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
     "build": "bun build src/index.ts --outdir dist --target bun",
-    "build:run": "bun run build && bun run dist/index.js",
-    "start": "bun run src/index.ts",
+    "start": "NODE_ENV=production bun run src/index.ts",
     "test": "bun test"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.2.0",
+    "@founderiq/database": "workspace:*",
+    "@sinclair/typebox": "^0.34.49",
+    "dotenv": "^17.4.2",
+    "elysia": "^1.4.29"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/pg": "^8.20.0",
-    "prisma": "^7.8.0"
-  },
-  "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "@elysiajs/cors": "^1.4.2",
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
-    "@types/node": "^26.0.0",
-    "dotenv": "^17.4.2",
-    "elysia": "^1.4.29",
-    "node": "^26.3.1",
-    "pg": "^8.22.0"
   }
 }
