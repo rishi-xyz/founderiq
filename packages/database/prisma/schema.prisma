@@ -130,18 +130,18 @@ model User {
   // UUID primary key
   id       String  @id @default(uuid())
   // Full display name
-  name     String
+  name     String?
   // Unique login email
   email    String  @unique
   // Bcrypt-hashed password (nullable for SSO-only accounts)
-  password String? @map("password")
+  password String @map("password")
 
   // Role within the organization (default: ANALYST)
   role UserRole @default(ANALYST)
 
   // FK → Organization
-  organizationId String       @map("organization_id")
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Active auth sessions
   sessions Session[]

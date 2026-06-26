@@ -1,5 +1,5 @@
-import { Elysia } from "elysia"
+import { Elysia, t } from "elysia"
 import { pingRoute } from "./ping"
 import { AuthRoute } from "./auth"
 
-export const routerv1 = new Elysia().group("/v1", (app) => app.use(pingRoute).use(AuthRoute))
+export const routerv1 = new Elysia().group("/v1", (app) => app.use(pingRoute).use(AuthRoute));
