@@ -10,6 +10,6 @@ describe("pingRoute", () => {
   it("returns the expected health-check body", async () => {
     const res = await pingRoute.handle(new Request("http://localhost/ping"))
     const body = await res.json()
-    expect(body).toEqual({ ok: true, reponse: "pong" })
+    expect(body).toEqual({ ok: true, response: "pong" })
   })
 })
