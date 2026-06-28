@@ -9,7 +9,10 @@ import jwt from "jsonwebtoken"
 /** Reads `JWT_SECRET` from env. @throws {Error} if missing. */
 const SECRET = (): string => {
     const secret = process.env.JWT_SECRET
-    if (!secret) throw new Error('JWT_SECRET enviroment variable is reuquired')
+    if (!secret) {
+        if (process.env.NODE_ENV !== "production") console.log(`[Error]: JWT_SECRET env missing`);
+        throw new Error('JWT_SECRET enviroment variable is reuquired')
+    }
     return secret;
 }
 

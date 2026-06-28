@@ -83,7 +83,7 @@ export abstract class AuthService {
                 throw new Error(err);
             }
         })
-        if (!(await verify(user.password, password))) throw new ApiError(401, "wrong_credentials", "Wrong username or password");
+        if (!(await verify(user.password!, password))) throw new ApiError(401, "wrong_credentials", "Wrong username or password");
         const access_token = signAccessToken({ userId: user.id, organizationId: user.organizationId ?? undefined, role: user.role })
         const refresh_token = signRefreshToken(user.id);
         await prisma.session.create({

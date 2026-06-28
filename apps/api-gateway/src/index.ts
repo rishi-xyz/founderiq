@@ -55,6 +55,9 @@ const app = new Elysia({
    * @example // 404 → { ok: false, error: { code: "not_found", message: "Route Not Found." } }
    */
   .onError(({ code, error, set }) => {
+    if (process.env.NODE_ENV !== "production") {
+      console.error(`[${code}]`, error instanceof Error ? error.stack || error.message : String(error))
+    }
     if (error instanceof ApiError) {
       set.status = error.status
       return {
@@ -107,7 +110,6 @@ const app = new Elysia({
             : error instanceof Error
               ? error.message
               : String(error)
-        console.error("[ERROR]", error instanceof Error ? error.message : String(error))
         set.status = 500
         return {
           ok: false,

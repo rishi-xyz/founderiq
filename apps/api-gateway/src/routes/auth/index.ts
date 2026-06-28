@@ -62,7 +62,7 @@ const authLogin = new Elysia().post("/login", async ({
   },
   set
 }) => {
-  const { access_token: accessToken, refresh_token: refreshToken, user } = await AuthService.login(body);
+  const { access_token: accessToken, refresh_token: refreshToken, user } = await AuthService.login({ email:body.email, password:body.password });
 
   access_token.value = accessToken
   refresh_token.value = refreshToken
