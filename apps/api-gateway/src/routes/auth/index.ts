@@ -1,6 +1,6 @@
 import { Elysia } from "elysia"
 import { AuthModel } from "./model";
-import { Auth } from "./service";
+import { AuthService } from "./service";
 
 
 const authRegister = new Elysia().post("/register", async ({
@@ -15,21 +15,9 @@ const authRegister = new Elysia().post("/register", async ({
     access_token: accessToken,
     refresh_token: refreshToken,
     user
-  } = await Auth.register(body);
-  access_token.set({
-    value: accessToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/"
-  });
-  refresh_token.set({
-    value: refreshToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/"
-  });
+  } = await AuthService.register(body);
+  access_token.value = accessToken
+  refresh_token.value = refreshToken
   set.status = 201;
   return {
     ok: true,
@@ -48,22 +36,10 @@ const authLogin = new Elysia().post("/login", async ({
   },
   set
 }) => {
-  const { access_token: accessToken, refresh_token: refreshToken, user } = await Auth.login(body);
+  const { access_token: accessToken, refresh_token: refreshToken, user } = await AuthService.login(body);
 
-  access_token.set({
-    value: accessToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/"
-  });
-  refresh_token.set({
-    value: refreshToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/"
-  });
+  access_token.value = accessToken
+  refresh_token.value = refreshToken
   set.status = 201;
   return {
     ok: true,
@@ -78,4 +54,25 @@ const authLogin = new Elysia().post("/login", async ({
 })
 
 
-export const AuthRoute = new Elysia().group("/auth", (app) => app.use(authRegister).use(authLogin))
+const authRefresh = new Elysia().post("/refresh", async ({
+  cookie: { access_token, refresh_token },
+  set
+}) => {
+  const { access_token: newAccessToken, refresh_token: newRefreshToken } =
+    await AuthService.refresh({
+      access_token: access_token.value,
+      refresh_token: refresh_token.value
+    });
+
+  access_token.value = newAccessToken
+  refresh_token.value = newRefreshToken
+
+  return {
+    ok: true,
+    data: { access_token: newAccessToken }
+  };
+}, {
+  cookie: AuthModel.authCookie
+})
+
+export const AuthRoute = new Elysia().group("/auth", (app) => app.use(authRegister).use(authLogin).use(authRefresh))
