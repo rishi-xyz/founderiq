@@ -59,10 +59,7 @@ const authRefresh = new Elysia().post("/refresh", async ({
   set
 }) => {
   const { access_token: newAccessToken, refresh_token: newRefreshToken } =
-    await AuthService.refresh({
-      access_token: access_token.value,
-      refresh_token: refresh_token.value
-    });
+    await AuthService.refresh(refresh_token.value!);
 
   access_token.value = newAccessToken
   refresh_token.value = newRefreshToken
@@ -75,4 +72,15 @@ const authRefresh = new Elysia().post("/refresh", async ({
   cookie: AuthModel.authCookie
 })
 
-export const AuthRoute = new Elysia().group("/auth", (app) => app.use(authRegister).use(authLogin).use(authRefresh))
+const authLogout = new Elysia().post("/logout", async ({ cookie: {
+  access_token,
+  refresh_token
+} }) => {
+  await AuthService.logout(refresh_token.value!);
+  access_token.remove();
+  refresh_token.remove();
+}, {
+  cookie: AuthModel['authCookie']
+})
+
+export const AuthRoute = new Elysia().group("/auth", (app) => app.use(authRegister).use(authLogin).use(authRefresh).use(authLogout))

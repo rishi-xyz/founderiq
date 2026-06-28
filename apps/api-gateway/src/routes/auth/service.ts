@@ -1,7 +1,7 @@
 import { prisma, type User } from "@founderiq/database";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../lib/jwt";
 import { ApiError } from "../../middleware";
-import type { AuthModel } from "./model";
+import type { AuthModel, RefreshToken } from "./model";
 import { hash, verify } from "argon2";
 
 export abstract class AuthService {
@@ -79,7 +79,7 @@ export abstract class AuthService {
         return { access_token, refresh_token, user };
     }
 
-    static async refresh({ access_token, refresh_token }: AuthModel['authCookie']): Promise<AuthModel['authCookie']> {
+    static async refresh(refresh_token: AuthModel['refreshToken']): Promise<AuthModel['authCookie']> {
         if (!refresh_token) throw new ApiError(401, "missing_refresh_token", "Refresh Token not Found.")
         let payload;
         try {
@@ -130,9 +130,20 @@ export abstract class AuthService {
             });
         }).catch((err) => {
             if (process.env.NODE_ENV !== "production") console.log(`[Error]: Err has occurred :${err}`);
-            throw new ApiError(500, "error_refreshing_token",err);
+            throw new ApiError(500, "error_refreshing_token", err);
         })
 
-        return { access_token:newAccessToken , refresh_token:newRefreshToken };
+        return { access_token: newAccessToken, refresh_token: newRefreshToken };
+    }
+
+    static async logout(refresh_token: AuthModel['refreshToken']): Promise<void> {
+        await prisma.session.delete({
+            where: {
+                refreshToken: refresh_token
+            }
+        }).catch((err) => {
+            if (process.env.NODE_ENV !== "production") console.log(`[Error]: Error deleting session from database. Error : ${err}`);
+            throw new ApiError(500, 'failed_session_deletion', "Failed to delete session.")
+        })
     }
 }
