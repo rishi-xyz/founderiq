@@ -134,7 +134,7 @@ model User {
   // Unique login email
   email    String  @unique
   // Bcrypt-hashed password (nullable for SSO-only accounts)
-  password String @map("password")
+  password String? @map("password")
 
   // Role within the organization (default: ANALYST)
   role UserRole @default(ANALYST)
