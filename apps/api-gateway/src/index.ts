@@ -1,13 +1,24 @@
+/**
+ * @fileoverview API Gateway — Elysia server entry point.
+ * Signed cookies for auth tokens, CORS with whitelisted origins, OpenAPI docs,
+ * global error handler, and v1 routes mounted at `/api/v1`.
+ */
 import { Elysia } from "elysia"
 import { cors } from "@elysiajs/cors"
 import { routerv1 } from "./routes"
 import { ApiError } from "./middleware"
 import { openapi } from "@elysia/openapi"
 
+/** Server port from `PORT` env, defaults to 5000. */
 const port = process.env.PORT || 5000
 
+/** CORS origins from comma-separated `PLATFORM_URL`, defaults to `http://localhost:3001`. */
 const allowedOrigins = (process.env.PLATFORM_URL || "http://localhost:3001").split(",")
 
+/**
+ * Elysia app with signed cookies for `access_token` and `refresh_token`,
+ * httpOnly, secure in production, sameSite lax.
+ */
 const app = new Elysia({
     cookie : {
         secrets: process.env.COOKIE_SECRET!,
@@ -28,6 +39,21 @@ const app = new Elysia({
       maxAge: 86400,
     }),
   )
+  /**
+   * Global error handler normalising errors into `{ ok: false, error: { code, message } }`.
+   *
+   * Priority: `ApiError` → Elysia lifecycle codes → 500 fallback.
+   * @note In production, internal error details are hidden behind a generic message.
+   *
+   * @param {Object}   ctx        - Error context from Elysia
+   * @param {string}   ctx.code   - Error code (e.g. "NOT_FOUND", "VALIDATION")
+   * @param {Error}    ctx.error  - The thrown error
+   * @param {Object}   ctx.set    - Response setter
+   * @returns {{ ok: false, error: { code: string, message: string } }}
+   *
+   * @example throw new ApiError(409, "user_already_exists", "Email already registered")
+   * @example // 404 → { ok: false, error: { code: "not_found", message: "Route Not Found." } }
+   */
   .onError(({ code, error, set }) => {
     if (error instanceof ApiError) {
       set.status = error.status

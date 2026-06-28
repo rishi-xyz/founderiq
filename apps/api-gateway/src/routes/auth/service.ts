@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Auth business logic — Argon2 hashing, JWT sessions, Prisma persistence.
+ * Access tokens carry `{ userId, organizationId?, role }`; refresh carry `{ userId, type:'refresh' }`.
+ * Sessions stored in DB with 7-day TTL.
+ */
 import { prisma, type User } from "@founderiq/database";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../lib/jwt";
 import { ApiError } from "../../middleware";
@@ -5,6 +10,16 @@ import type { AuthModel, RefreshToken } from "./model";
 import { hash, verify } from "argon2";
 
 export abstract class AuthService {
+    /**
+     * Create a new user account. Checks email uniqueness, hashes password, creates user+session in a transaction.
+     *
+     * @param {{ email: string, password: string }} body - Registration payload (password min 8 chars)
+     * @returns {Promise<{ access_token: string, refresh_token: string, user: User }>}
+     * @throws {ApiError} 409 - user_already_exists
+     * @throws {ApiError} 500 - error_creating_user / error_creating_session
+     *
+     * @example const { access_token, user } = await AuthService.register({ email:"a@b.com", password:"pass1234" })
+     */
     static async register({ email, password }: AuthModel['authbody']): Promise<{
         access_token: string,
         refresh_token: string,
@@ -41,6 +56,16 @@ export abstract class AuthService {
         return { access_token, refresh_token, user };
     }
 
+    /**
+     * Authenticate user by email, verify password, create session.
+     *
+     * @param {{ email: string, password: string }} body - Login credentials
+     * @returns {Promise<{ access_token: string, refresh_token: string, user: User }>}
+     * @throws {ApiError} 401 - user_not_found / wrong_credentials
+     * @throws {ApiError} 500 - error_creating_session
+     *
+     * @example const { access_token, user } = await AuthService.login({ email:"a@b.com", password:"pass1234" })
+     */
     static async login({ email, password }: AuthModel['authbody']): Promise<{
         access_token: string,
         refresh_token: string,
@@ -58,13 +83,9 @@ export abstract class AuthService {
                 throw new Error(err);
             }
         })
-        // check the hash passowrd matches or not
         if (!(await verify(user.password, password))) throw new ApiError(401, "wrong_credentials", "Wrong username or password");
-        // create accessToken
         const access_token = signAccessToken({ userId: user.id, organizationId: user.organizationId ?? undefined, role: user.role })
-        // create refresh token
         const refresh_token = signRefreshToken(user.id);
-        // create session
         await prisma.session.create({
             data: {
                 userId: user.id,
@@ -79,6 +100,16 @@ export abstract class AuthService {
         return { access_token, refresh_token, user };
     }
 
+    /**
+     * Rotate tokens: validate JWT + session expiry, delete old session, create new one.
+     *
+     * @param {string|null} refresh_token - Raw refresh token from cookie
+     * @returns {Promise<{ access_token: string, refresh_token: string }>}
+     * @throws {ApiError} 401 - missing_refresh_token / invalid_refresh_token / session_expired / user_not_found
+     * @throws {ApiError} 500 - error_refreshing_token
+     *
+     * @example const tokens = await AuthService.refresh("eyJhbG...")
+     */
     static async refresh(refresh_token: AuthModel['refreshToken']): Promise<AuthModel['authCookie']> {
         if (!refresh_token) throw new ApiError(401, "missing_refresh_token", "Refresh Token not Found.")
         let payload;
@@ -87,7 +118,6 @@ export abstract class AuthService {
         } catch (error) {
             throw new ApiError(401, "invalid_refresh_token", "Invalid or expired refresh token.")
         }
-        // find  the session and verify the date to expire_at date
         const session = await prisma.session.findUniqueOrThrow({
             where: {
                 refreshToken: refresh_token
@@ -136,6 +166,15 @@ export abstract class AuthService {
         return { access_token: newAccessToken, refresh_token: newRefreshToken };
     }
 
+    /**
+     * Delete session by refresh token.
+     *
+     * @param {string} refresh_token - Token identifying the session to delete
+     * @returns {Promise<void>}
+     * @throws {ApiError} 500 - failed_session_deletion
+     *
+     * @example await AuthService.logout("eyJhbG...")
+     */
     static async logout(refresh_token: AuthModel['refreshToken']): Promise<void> {
         await prisma.session.delete({
             where: {
