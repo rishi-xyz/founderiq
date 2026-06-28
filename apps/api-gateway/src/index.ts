@@ -2,6 +2,7 @@ import { Elysia } from "elysia"
 import { cors } from "@elysiajs/cors"
 import { routerv1 } from "./routes"
 import { ApiError } from "./middleware"
+import { openapi } from "@elysia/openapi"
 
 const port = process.env.PORT || 5000
 
@@ -17,6 +18,7 @@ const app = new Elysia({
         path: "/"
     }
 })
+  .use(openapi())
   .use(
     cors({
       origin: allowedOrigins,

@@ -11,6 +11,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@elysia/openapi": "^1.4.15",
     "@elysiajs/cors": "^1.2.0",
     "@founderiq/database": "workspace:*",
     "@sinclair/typebox": "^0.34.49",
