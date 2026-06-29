@@ -359,7 +359,7 @@ model Candidate {
   companyName    String  @map("company_name")
 
   // Arbitrary JSON metadata from the sourcing pipeline
-  metadata Json            @map("{}")
+  metadata Json            @default("{}")
   // Screening pipeline status (default: RECIEVED)
   status   CandidateStatus @default(RECIEVED)
 
