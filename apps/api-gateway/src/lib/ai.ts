@@ -74,7 +74,8 @@ export type StartupAnalysis = z.infer<typeof analysisSchema>
 // ---------------------------------------------------------------------------
 
 function parseStructuredOutput<T>(content: string, schema: z.ZodType<T>): T {
-  const cleaned = content.replace(/```(?:json)?\s*/g, "").trim()
+  let cleaned = content.replace(/```(?:json)?\s*/g, "").trim()
+  cleaned = cleaned.replace(/\\(?!["\\/bfnrtu])/g, "")
   return schema.parse(JSON.parse(cleaned))
 }
 
@@ -133,18 +134,16 @@ export async function generateInterviewQuestions(
   analysis: StartupAnalysis,
   documentSummaries: string[] = [],
 ): Promise<{ category: string; question: string }[]> {
+  const validCategories = ["Vision", "Market", "Competition", "Product", "Go-To-Market", "Team", "Financials"] as const
   const questionsSchema = z.object({
     questions: z.array(
       z.object({
-        category: z.enum([
-          "Vision",
-          "Market",
-          "Competition",
-          "Product",
-          "Go-To-Market",
-          "Team",
-          "Financials",
-        ]),
+        category: z.string().transform((val) => {
+          const match = validCategories.find(
+            (c) => c.toLowerCase() === val.toLowerCase() || c.replace(/-/g, "").toLowerCase() === val.replace(/-/g, "").toLowerCase()
+          )
+          return match ?? val
+        }),
         question: z.string(),
       }),
     ),

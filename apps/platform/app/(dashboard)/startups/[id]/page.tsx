@@ -2,14 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { api, ApiError, type Startup, type Analysis, type Interview, type Document, type Memo } from "@/lib/api"
+import { api, ApiError, type Startup, type Analysis } from "@/lib/api"
 import { Button } from "@founderiq/ui"
 import { ArrowLeft, Sparkles, MessageSquare, FileText, BookOpen, Globe, MapPin, DollarSign, Activity } from "lucide-react"
 import Link from "next/link"
 import { AnalysisPanel } from "@/components/startups/analysis-panel"
-import { InterviewPanel } from "@/components/startups/interview-panel"
-import { DocumentManager } from "@/components/startups/document-manager"
-import { MemoPanel } from "@/components/startups/memo-panel"
 
 type Tab = "overview" | "analysis" | "interview" | "documents" | "memo"
 
@@ -28,8 +25,6 @@ export default function StartupDetailPage() {
   const router = useRouter()
   const [startup, setStartup] = useState<Startup | null>(null)
   const [analyses, setAnalyses] = useState<Analysis[]>([])
-  const [interview, setInterview] = useState<Interview | null>(null)
-  const [memo, setMemo] = useState<Memo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeTab, setActiveTab] = useState<Tab>("overview")
@@ -38,16 +33,12 @@ export default function StartupDetailPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [s, a, iv, m] = await Promise.all([
+      const [s, a] = await Promise.all([
         api.get<Startup>(`/startups/${id}`),
         api.get<Analysis[]>(`/startups/${id}/analyses`).catch(() => []),
-        api.get<Interview>(`/startups/${id}/interview`).catch(() => null),
-        api.get<Memo>(`/startups/${id}/memo`).catch(() => null),
       ])
       setStartup(s)
       setAnalyses(a)
-      setInterview(iv)
-      setMemo(m)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load startup")
     } finally {
@@ -71,12 +62,12 @@ export default function StartupDetailPage() {
     }
   }
 
-  const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
+  const tabs: { key: Tab; label: string; icon: React.ElementType; comingSoon?: boolean }[] = [
     { key: "overview", label: "Overview", icon: Activity },
     { key: "analysis", label: "Analysis", icon: Sparkles },
-    { key: "interview", label: "Interview", icon: MessageSquare },
-    { key: "documents", label: "Documents", icon: FileText },
-    { key: "memo", label: "Memo", icon: BookOpen },
+    { key: "interview", label: "Interview", icon: MessageSquare, comingSoon: true },
+    { key: "documents", label: "Documents", icon: FileText, comingSoon: true },
+    { key: "memo", label: "Memo", icon: BookOpen, comingSoon: true },
   ]
 
   if (loading) {
@@ -168,6 +159,11 @@ export default function StartupDetailPage() {
               >
                 <Icon className="w-3.5 h-3.5" />
                 {tab.label}
+                {tab.comingSoon && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-foreground/5 text-muted-foreground font-mono">
+                    Soon
+                  </span>
+                )}
               </button>
             )
           })}
@@ -199,15 +195,15 @@ export default function StartupDetailPage() {
               </div>
               <div className="bg-card border border-foreground/10 p-5">
                 <div className="text-xs font-mono text-muted-foreground mb-1">Interview Status</div>
-                <div className="text-2xl font-display">{interview ? interview.status : "—"}</div>
+                <div className="text-2xl font-display">—</div>
               </div>
               <div className="bg-card border border-foreground/10 p-5">
                 <div className="text-xs font-mono text-muted-foreground mb-1">Avg Score</div>
-                <div className="text-2xl font-display">{interview?.overall_score ? `${interview.overall_score}%` : "—"}</div>
+                <div className="text-2xl font-display">—</div>
               </div>
               <div className="bg-card border border-foreground/10 p-5">
                 <div className="text-xs font-mono text-muted-foreground mb-1">Memo</div>
-                <div className="text-2xl font-display">{memo ? memo.recommendation || "Draft" : "—"}</div>
+                <div className="text-2xl font-display">—</div>
               </div>
             </div>
           </div>
@@ -224,24 +220,33 @@ export default function StartupDetailPage() {
         )}
 
         {activeTab === "interview" && (
-          <InterviewPanel
-            startupId={id}
-            interview={interview}
-            onRefresh={fetchData}
-          />
+          <div className="border border-foreground/10 p-12 text-center">
+            <MessageSquare className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            <h3 className="text-sm font-mono text-foreground mb-1">AI Interview — Coming Soon</h3>
+            <p className="text-xs text-muted-foreground">
+              Schedule and conduct AI-powered founder interviews with real-time question generation and scoring.
+            </p>
+          </div>
         )}
 
         {activeTab === "documents" && (
-          <DocumentManager startupId={id} />
+          <div className="border border-foreground/10 p-12 text-center">
+            <FileText className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            <h3 className="text-sm font-mono text-foreground mb-1">Documents — Coming Soon</h3>
+            <p className="text-xs text-muted-foreground">
+              Upload and manage pitch decks, financial models, and other startup documents for AI-powered analysis.
+            </p>
+          </div>
         )}
 
         {activeTab === "memo" && (
-          <MemoPanel
-            startupId={id}
-            memo={memo}
-            analysesCount={analyses.length}
-            onRefresh={fetchData}
-          />
+          <div className="border border-foreground/10 p-12 text-center">
+            <BookOpen className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
+            <h3 className="text-sm font-mono text-foreground mb-1">Investment Memo — Coming Soon</h3>
+            <p className="text-xs text-muted-foreground">
+              Generate comprehensive investment memos with AI-driven analysis and recommendations.
+            </p>
+          </div>
         )}
       </div>
     </div>

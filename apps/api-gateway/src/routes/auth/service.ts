@@ -20,7 +20,7 @@ export abstract class AuthService {
      *
      * @example const { access_token, user } = await AuthService.register({ email:"a@b.com", password:"pass1234" })
      */
-    static async register({ email, password }: AuthModel['authbody']): Promise<{
+    static async register({ email, password, name }: AuthModel['authbody']): Promise<{
         access_token: string,
         refresh_token: string,
         user: User
@@ -33,8 +33,17 @@ export abstract class AuthService {
         if (existing_user) throw new ApiError(409, "user_already_exists", "An account with this email already exists")
         const hashed_password = await hash(password);
         const [user, refresh_token] = await prisma.$transaction(async (tx) => {
+            const orgName = name
+                ? `${name}'s Firm`
+                : `${email.split('@')[0]}'s Firm`
+            const org = await tx.organization.create({
+                data: { name: orgName, type: 'Others' }
+            }).catch((err) => {
+                if (process.env.NODE_ENV !== "production") console.log("[Error] creating organization", err)
+                throw new ApiError(500, "error_creating_org", "Error creating organization.")
+            })
             const user = await tx.user.create({
-                data: { email, password: hashed_password, role: 'ANALYST' }
+                data: { email, password: hashed_password, role: 'ANALYST', organizationId: org.id }
             }).catch((err) => {
                 if (process.env.NODE_ENV !== "production") console.log("[Error] creating user", err)
                 throw new ApiError(500, "error_creating_user", "Error creating user.")
