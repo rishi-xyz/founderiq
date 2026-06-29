@@ -1,7 +1,33 @@
-# api-gateway
+# Env + README updates
 
-HTTP API gateway built on [Elysia](https://elysiajs.com) + [Bun](https://bun.sh).
+## 1. Create `apps/api-gateway/.env.example`
 
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/founderiq"
+
+# Auth secrets — generate with: openssl rand -hex 32
+JWT_SECRET="replace-with-random-64-char-string"
+COOKIE_SECRET="replace-with-random-64-char-string"
+
+# AI — optional, AI endpoints return errors without this
+OPENROUTER_API_KEY=
+AI_MODEL=gratis
+
+# Cloudflare R2 — optional, only needed for document uploads
+R2_ENDPOINT=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=founder-iq
+R2_PUBLIC_URL=
+
+# Frontend URL (used in interview session links)
+FRONTEND_URL=http://localhost:3000
+```
+
+## 2. Append to `apps/api-gateway/README.md`
+
+```markdown
 ## Quick Start (Hackathon / Prototype)
 
 1. **Prerequisites:** Bun, PostgreSQL running locally
@@ -33,74 +59,6 @@ HTTP API gateway built on [Elysia](https://elysiajs.com) + [Bun](https://bun.sh)
      -H "Content-Type: application/json" \
      -d '{"email":"demo@test.com","password":"demo123","name":"Demo User","organization_name":"Demo Org","organization_type":"Venture_Capital"}'
    ```
-
-## Setup
-
-```bash
-bun install
-```
-
-## Running
-
-```bash
-bun run index.ts
-```
-
-## Router
-
-The gateway uses [Elysia](https://elysiajs.com) — a Bun-native framework with built-in support for middleware, validation, error handling, and path prefixing.
-
-### API Versioning
-
-Versioned routers are created in `src/routes/index.ts` using Elysia's `prefix` option:
-
-```ts
-export const routerv1 = new Elysia({ prefix: "/api/v1" });
-export const routerv2 = new Elysia({ prefix: "/api/v2" }); // future
-```
-
-Routes are registered without the prefix — it's prepended automatically:
-
-```ts
-app.get("/ping", handler);       // matches GET /api/v1/ping
-app.get("/users/:id", handler);  // matches GET /api/v1/users/:id
-```
-
-### Adding Routes
-
-Create an Elysia plugin under `src/routes/`:
-
-```ts
-// src/routes/items/index.ts
-import { Elysia } from "elysia";
-
-export const itemsRoute = new Elysia()
-  .get("/items", () => {
-    return { items: [] };
-  });
-```
-
-Wire it up in `src/routes/index.ts`:
-
-```ts
-import { itemsRoute } from "./items";
-export const routerv1 = new Elysia({ prefix: "/api/v1" })
-  .use(itemsRoute);
-```
-
-### Error Handling
-
-Throw `ApiError` from handlers for structured responses:
-
-```ts
-import { ApiError } from "../middleware";
-
-app.get("/users/:id", ({ params: { id } }) => {
-  throw new ApiError(404, "not_found", "User not found");
-});
-```
-
-Errors are caught by the `onError` hook in `src/index.ts` and returned as `{ ok: false, error: { code, message } }`.
 
 ### API Overview
 
@@ -137,3 +95,34 @@ Errors are caught by the `onError` hook in `src/index.ts` and returned as `{ ok:
 | GET | `/api/v1/events` | JWT/AK | Webhook delivery log |
 
 **Auth:** JWT via `access_token` cookie, or API key via `Authorization: Bearer fiq_live_*`
+```
+
+## 3. Create root `README.md` at `/home/rishi/Rishi/hacks/founderiq/README.md`
+
+```markdown
+# FounderIQ
+
+AI-powered deal sourcing & intelligent interview pipeline for venture capital firms.
+
+## Monorepo Structure
+
+```
+apps/
+  api-gateway/   — Elysia.js HTTP API (Bun)
+packages/
+  database/      — Prisma schema + client
+```
+
+## Quick Start
+
+See `apps/api-gateway/README.md` for setup instructions.
+
+## Stack
+
+- **Runtime:** Bun
+- **API:** Elysia.js
+- **ORM:** Prisma + PostgreSQL
+- **Auth:** JWT (access + refresh tokens), API keys (SHA-256)
+- **AI:** OpenRouter (free tier)
+- **Storage:** Cloudflare R2 (S3-compatible)
+```
