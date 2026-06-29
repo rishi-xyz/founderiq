@@ -223,11 +223,22 @@ export async function scoreAnswer(
 export async function generateInvestmentMemo(
   startup: StartupInput,
   analysisSummary: string,
+  documentSummaries: string[] = [],
 ): Promise<{ recommendation: string; memo_content: string }> {
+  const validRecommendations = ["invest", "pass", "monitor", "follow_on"] as const
   const memoSchema = z.object({
-    recommendation: z.enum(["invest", "pass", "monitor", "follow_on"]),
+    recommendation: z.string().transform((val) => {
+      const lower = val.toLowerCase().trim()
+      const match = validRecommendations.find((r) => lower.includes(r))
+      return match ?? lower
+    }).pipe(z.enum(validRecommendations)),
     memo_content: z.string(),
   })
+
+  const docSection =
+    documentSummaries.length > 0
+      ? `\n\nDocuments uploaded by the startup:\n${documentSummaries.map((s, i) => `[${i + 1}] ${s}`).join("\n")}`
+      : ""
 
   const response = await client.chat.completions.create({
     model: MODEL,
@@ -235,11 +246,11 @@ export async function generateInvestmentMemo(
       {
         role: "system",
         content:
-          "You are a VC partner writing an investment memo for the investment committee. Write a thorough, investor-grade memo in markdown with these sections: Executive Summary, Company Overview, Founder Evaluation, Market Analysis, Strengths, Risks, Investment Thesis, Recommendation. Be specific and decisive. Respond with valid JSON: { recommendation, memo_content }",
+          "You are a VC partner writing an investment memo for the investment committee. Write a thorough, investor-grade memo in markdown with these sections: Executive Summary, Company Overview, Founder Evaluation, Market Analysis, Strengths, Risks, Investment Thesis, Recommendation. Be specific and decisive. Incorporate insights from the startup's uploaded documents where relevant. Respond with valid JSON: { recommendation, memo_content }",
       },
       {
         role: "user",
-        content: `Write an investment memo for this startup.\n\n${startupContext(startup)}\n\nAnalysis findings:\n${analysisSummary}`,
+        content: `Write an investment memo for this startup.\n\n${startupContext(startup)}\n\nAnalysis findings:\n${analysisSummary}${docSection}`,
       },
     ],
     response_format: { type: "json_object" },

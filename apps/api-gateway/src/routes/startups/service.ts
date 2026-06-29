@@ -6,7 +6,7 @@ import {
   scoreAnswer as aiScoreAnswer,
   generateInvestmentMemo,
 } from "../../lib/ai"
-import { uploadFile, deleteFile, generateKey, isAllowedMimeType, isWithinSizeLimit } from "../../lib/storage"
+import { uploadFile, deleteFile, generateKey, isAllowedMimeType, isWithinSizeLimit, getFile, extractKeyFromUrl } from "../../lib/storage"
 
 function toStartupInput(s: {
   id: string
@@ -367,7 +367,28 @@ export abstract class StartupService {
       .map((a) => `${a.analysisType} (score ${a.score}): ${a.content}`)
       .join("\n")
 
-    const result = await generateInvestmentMemo(toStartupInput(startup), summary)
+    // Fetch documents and extract text content for AI context
+    const documents = await prisma.document.findMany({
+      where: { startupId: id },
+      orderBy: { createdAt: "desc" },
+    })
+    const documentSummaries: string[] = []
+    for (const doc of documents) {
+      if (doc.fileType === "text/plain" && doc.fileUrl) {
+        const key = extractKeyFromUrl(doc.fileUrl)
+        const buffer = await getFile(key)
+        const text = buffer ? buffer.toString("utf-8").slice(0, 5000) : null
+        documentSummaries.push(
+          `File: ${doc.fileName ?? "unnamed.txt"} (type: ${doc.fileType})\nContent:\n${text ?? "(unable to read)"}`
+        )
+      } else {
+        documentSummaries.push(
+          `File: ${doc.fileName ?? "unnamed"} (type: ${doc.fileType}) — content extraction not available for this format`
+        )
+      }
+    }
+
+    const result = await generateInvestmentMemo(toStartupInput(startup), summary, documentSummaries)
 
     const memo = await prisma.investmentMemo.create({
       data: {
@@ -447,8 +468,10 @@ export abstract class StartupService {
     })
     if (!startup) throw new ApiError(404, "not_found", "Startup not found.")
 
-    if (!isAllowedMimeType(file.type)) {
-      throw new ApiError(422, "invalid_file_type", `File type "${file.type}" is not allowed.`)
+    const mimeType = file.type.split(";")[0]!.trim()
+
+    if (!isAllowedMimeType(mimeType)) {
+      throw new ApiError(422, "invalid_file_type", `File type "${mimeType}" is not allowed.`)
     }
 
     if (!isWithinSizeLimit(file.size)) {
@@ -457,12 +480,12 @@ export abstract class StartupService {
 
     const buffer = Buffer.from(await file.arrayBuffer())
     const key = generateKey(startupId, file.name)
-    const url = await uploadFile(key, buffer, file.type)
+    const url = await uploadFile(key, buffer, mimeType)
 
     const doc = await prisma.document.create({
       data: {
         startupId,
-        fileType: file.type,
+        fileType: mimeType,
         fileUrl: url,
         fileName: file.name,
         uploadStatus: "COMPLETE",

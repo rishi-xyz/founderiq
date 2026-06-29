@@ -1,5 +1,6 @@
 import {
   S3Client,
+  GetObjectCommand,
   PutObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3"
@@ -36,6 +37,21 @@ export async function deleteFile(key: string): Promise<void> {
   await client.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }))
 }
 
+export async function getFile(key: string): Promise<Buffer | null> {
+  try {
+    const response = await client.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }))
+    const bytes = await response.Body?.transformToByteArray()
+    return bytes ? Buffer.from(bytes) : null
+  } catch {
+    return null
+  }
+}
+
+export function extractKeyFromUrl(url: string): string {
+  const publicUrl = process.env.R2_PUBLIC_URL ?? ""
+  return publicUrl ? url.replace(`${publicUrl}/`, "") : url
+}
+
 export function generateKey(startupId: string, fileName: string): string {
   const ext = fileName.split(".").pop() ?? "bin"
   return `startups/${startupId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
@@ -59,8 +75,9 @@ export const ALLOWED_MIME_TYPES = [
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number]
 
 export function isAllowedMimeType(mime: string): mime is AllowedMimeType {
-  if (mime.startsWith("image/")) return true
-  return ALLOWED_MIME_TYPES.includes(mime as AllowedMimeType)
+  const base = mime.split(";")[0]!.trim()
+  if (base.startsWith("image/")) return true
+  return ALLOWED_MIME_TYPES.includes(base as AllowedMimeType)
 }
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024

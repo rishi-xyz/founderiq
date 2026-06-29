@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { api, ApiError, type Startup, type Analysis } from "@/lib/api"
+import { api, ApiError, type Startup, type Analysis, type Memo } from "@/lib/api"
 import { Button } from "@founderiq/ui"
 import { ArrowLeft, Sparkles, MessageSquare, FileText, BookOpen, Globe, MapPin, DollarSign, Activity } from "lucide-react"
 import Link from "next/link"
 import { AnalysisPanel } from "@/components/startups/analysis-panel"
+import { DocumentManager } from "@/components/startups/document-manager"
+import { MemoPanel } from "@/components/startups/memo-panel"
 
 type Tab = "overview" | "analysis" | "interview" | "documents" | "memo"
 
@@ -28,17 +30,20 @@ export default function StartupDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeTab, setActiveTab] = useState<Tab>("overview")
+  const [memo, setMemo] = useState<Memo | null>(null)
   const [analyzing, setAnalyzing] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [s, a] = await Promise.all([
+      const [s, a, m] = await Promise.all([
         api.get<Startup>(`/startups/${id}`),
         api.get<Analysis[]>(`/startups/${id}/analyses`).catch(() => []),
+        api.get<Memo>(`/startups/${id}/memo`).catch(() => null),
       ])
       setStartup(s)
       setAnalyses(a)
+      setMemo(m)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load startup")
     } finally {
@@ -66,8 +71,8 @@ export default function StartupDetailPage() {
     { key: "overview", label: "Overview", icon: Activity },
     { key: "analysis", label: "Analysis", icon: Sparkles },
     { key: "interview", label: "Interview", icon: MessageSquare, comingSoon: true },
-    { key: "documents", label: "Documents", icon: FileText, comingSoon: true },
-    { key: "memo", label: "Memo", icon: BookOpen, comingSoon: true },
+    { key: "documents", label: "Documents", icon: FileText },
+    { key: "memo", label: "Memo", icon: BookOpen },
   ]
 
   if (loading) {
@@ -230,23 +235,16 @@ export default function StartupDetailPage() {
         )}
 
         {activeTab === "documents" && (
-          <div className="border border-foreground/10 p-12 text-center">
-            <FileText className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-            <h3 className="text-sm font-mono text-foreground mb-1">Documents — Coming Soon</h3>
-            <p className="text-xs text-muted-foreground">
-              Upload and manage pitch decks, financial models, and other startup documents for AI-powered analysis.
-            </p>
-          </div>
+          <DocumentManager startupId={id} />
         )}
 
         {activeTab === "memo" && (
-          <div className="border border-foreground/10 p-12 text-center">
-            <BookOpen className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-            <h3 className="text-sm font-mono text-foreground mb-1">Investment Memo — Coming Soon</h3>
-            <p className="text-xs text-muted-foreground">
-              Generate comprehensive investment memos with AI-driven analysis and recommendations.
-            </p>
-          </div>
+          <MemoPanel
+            startupId={id}
+            memo={memo}
+            analysesCount={analyses.length}
+            onRefresh={fetchData}
+          />
         )}
       </div>
     </div>
