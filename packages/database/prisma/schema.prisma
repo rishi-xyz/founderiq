@@ -416,8 +416,8 @@ model ApiKey {
   name      String
   // First few characters of the key for identification
   keyPrefix String   @map("key_prefix")
-  // Bcrypt-style hash of the full key for authentication
-  keyHash   String   @map("key_hash")
+  // SHA-256 hash of the full key for authentication
+  keyHash   String   @unique @map("key_hash")
   // Last four characters for UI display
   lastFour  String   @map("last_four")
   // Permission scopes assigned to this key
