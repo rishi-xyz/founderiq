@@ -229,6 +229,87 @@ describe("CandidateService", () => {
 
   // ───── analyzeCandidate ─────────────────────────────────────────────
 
+  // ───── updateCandidate ──────────────────────────────────────────────
+
+  describe("updateCandidate", () => {
+    it("updates candidate fields and returns updated data", async () => {
+      mockCandidateFindFirst.mockImplementationOnce(() => Promise.resolve(mockCandidate))
+      mockCandidateUpdate.mockImplementationOnce(() => Promise.resolve({
+        ...mockCandidate,
+        applicantName: "Bob",
+        applicantEmail: "bob@example.com",
+      }))
+
+      const result = await CandidateService.updateCandidate(ORG_ID, CANDIDATE_ID, {
+        applicant_name: "Bob",
+        applicant_email: "bob@example.com",
+      })
+
+      expect(result).toMatchObject({
+        id: CANDIDATE_ID,
+        applicant_name: "Bob",
+        applicant_email: "bob@example.com",
+      })
+      expect(mockCandidateUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: CANDIDATE_ID },
+          data: expect.objectContaining({
+            applicantName: "Bob",
+            applicantEmail: "bob@example.com",
+          }),
+        }),
+      )
+    })
+
+    it("updates only provided fields", async () => {
+      mockCandidateFindFirst.mockImplementationOnce(() => Promise.resolve(mockCandidate))
+      mockCandidateUpdate.mockImplementationOnce(() => Promise.resolve({
+        ...mockCandidate,
+        companyName: "Beta AI",
+      }))
+
+      const result = await CandidateService.updateCandidate(ORG_ID, CANDIDATE_ID, {
+        company_name: "Beta AI",
+      })
+
+      expect(result.company_name).toBe("Beta AI")
+      expect(mockCandidateUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ applicantName: expect.anything() }),
+        }),
+      )
+    })
+
+    it("updates metadata", async () => {
+      const newMeta = { source: "linkedin", score: 95 }
+      mockCandidateFindFirst.mockImplementationOnce(() => Promise.resolve(mockCandidate))
+      mockCandidateUpdate.mockImplementationOnce(() => Promise.resolve({
+        ...mockCandidate,
+        metadata: newMeta,
+      }))
+
+      const result = await CandidateService.updateCandidate(ORG_ID, CANDIDATE_ID, {
+        metadata: newMeta,
+      })
+
+      expect(result).toMatchObject({ id: CANDIDATE_ID })
+      expect(mockCandidateUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ metadata: newMeta }),
+        }),
+      )
+    })
+
+    it("throws 404 when candidate not found", async () => {
+      mockCandidateFindFirst.mockImplementationOnce(() => Promise.resolve(null))
+
+      const caught: unknown = await CandidateService.updateCandidate(ORG_ID, "bad", { company_name: "X" }).catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(404)
+    })
+  })
+
   describe("analyzeCandidate", () => {
     it("runs AI analysis and saves results", async () => {
       mockCandidateFindFirst.mockImplementationOnce(() => Promise.resolve(mockCandidate))

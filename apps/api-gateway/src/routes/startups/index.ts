@@ -29,6 +29,11 @@ export const startupsRoute = new Elysia()
     const data = await StartupService.createStartup(auth.organizationId, body)
     return { ok: true, data }
   })
+  .patch("/startups/:id", async ({ auth, params: { id }, body }: any) => {
+    if (auth.type === "api_key") requireScope(auth, "write")
+    const data = await StartupService.updateStartup(auth.organizationId, id, body)
+    return { ok: true, data }
+  })
   .post("/startups/:id/analyze", async ({ auth, params: { id } }: any) => {
     if (auth.type === "api_key") requireScope(auth, "write")
     const data = await StartupService.analyzeStartup(auth.organizationId, id)

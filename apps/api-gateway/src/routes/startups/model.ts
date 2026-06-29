@@ -28,6 +28,16 @@ const postScoreBody = t.Object({
   answer: t.String({ minLength: 1 }),
 })
 
+const patchStartupBody = t.Object({
+  name: t.Optional(t.String({ minLength: 1 })),
+  website: t.Optional(t.String()),
+  industry: t.Optional(t.String()),
+  stage: t.Optional(t.String()),
+  location: t.Optional(t.String()),
+  description: t.Optional(t.String()),
+  funding_raised: t.Optional(t.Number()),
+})
+
 const postCompleteBody = t.Object({
   interview_id: t.String(),
 })
@@ -93,6 +103,7 @@ export const StartupModel = {
   postStartupBody,
   listStartupsQuery,
   postScoreBody,
+  patchStartupBody,
   postCompleteBody,
   startupResponse,
   analysisItem,

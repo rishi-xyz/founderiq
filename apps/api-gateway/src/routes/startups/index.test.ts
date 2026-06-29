@@ -243,6 +243,60 @@ describe("StartupService", () => {
 
   // ───── analyzeStartup ────────────────────────────────────────────────
 
+  // ───── updateStartup ─────────────────────────────────────────────────
+
+  describe("updateStartup", () => {
+    it("updates a startup and returns the new data", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+      mockStartupUpdate.mockImplementationOnce(() => Promise.resolve({
+        ...mockStartup,
+        name: "Beta AI",
+        fundingRaised: BigInt(1000000),
+      }))
+
+      const result = await StartupService.updateStartup(ORG_ID, STARTUP_ID, {
+        name: "Beta AI",
+        funding_raised: 1000000,
+      })
+
+      expect(result).toMatchObject({ name: "Beta AI", funding_raised: 1000000 })
+      expect(mockStartupUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: STARTUP_ID },
+          data: expect.objectContaining({ name: "Beta AI", fundingRaised: BigInt(1000000) }),
+        }),
+      )
+    })
+
+    it("updates only provided fields", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+      mockStartupUpdate.mockImplementationOnce(() => Promise.resolve({
+        ...mockStartup,
+        website: "https://beta.ai",
+      }))
+
+      const result = await StartupService.updateStartup(ORG_ID, STARTUP_ID, {
+        website: "https://beta.ai",
+      })
+
+      expect(result.website).toBe("https://beta.ai")
+      expect(mockStartupUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.not.objectContaining({ name: expect.anything() }),
+        }),
+      )
+    })
+
+    it("throws 404 when startup not found", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(null))
+
+      const caught: unknown = await StartupService.updateStartup(ORG_ID, "bad", { name: "X" }).catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(404)
+    })
+  })
+
   describe("analyzeStartup", () => {
     it("runs AI analysis and saves 6 analysis records", async () => {
       mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))

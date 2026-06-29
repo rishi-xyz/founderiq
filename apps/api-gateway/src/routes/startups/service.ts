@@ -137,6 +137,41 @@ export abstract class StartupService {
     return toStartupJson(startup)
   }
 
+  static async updateStartup(
+    organizationId: string,
+    id: string,
+    body: {
+      name?: string
+      website?: string
+      industry?: string
+      stage?: string
+      location?: string
+      description?: string
+      funding_raised?: number
+    },
+  ) {
+    const existing = await prisma.startup.findFirst({
+      where: { id, organizationId },
+    })
+    if (!existing) throw new ApiError(404, "not_found", "Startup not found.")
+
+    const data: any = {}
+    if (body.name !== undefined) data.name = body.name
+    if (body.website !== undefined) data.website = body.website
+    if (body.industry !== undefined) data.industry = body.industry
+    if (body.stage !== undefined) data.stage = body.stage
+    if (body.location !== undefined) data.location = body.location
+    if (body.description !== undefined) data.description = body.description
+    if (body.funding_raised !== undefined) data.fundingRaised = BigInt(body.funding_raised)
+
+    const startup = await prisma.startup.update({
+      where: { id },
+      data,
+    })
+
+    return toStartupJson(startup)
+  }
+
   static async analyzeStartup(organizationId: string, id: string) {
     const startup = await prisma.startup.findFirst({
       where: { id, organizationId },

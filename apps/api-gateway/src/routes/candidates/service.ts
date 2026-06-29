@@ -200,6 +200,48 @@ export abstract class CandidateService {
     }
   }
 
+  static async updateCandidate(
+    organizationId: string,
+    id: string,
+    body: {
+      external_id?: string
+      applicant_name?: string
+      applicant_email?: string
+      company_name?: string
+      metadata?: Record<string, unknown>
+    },
+  ) {
+    const existing = await prisma.candidate.findFirst({
+      where: { id, organizationId },
+    })
+    if (!existing) throw new ApiError(404, "not_found", "Candidate not found.")
+
+    const data: any = {}
+    if (body.external_id !== undefined) data.externalId = body.external_id
+    if (body.applicant_name !== undefined) data.applicantName = body.applicant_name
+    if (body.applicant_email !== undefined) data.applicantEmail = body.applicant_email
+    if (body.company_name !== undefined) data.companyName = body.company_name
+    if (body.metadata !== undefined) data.metadata = body.metadata
+
+    const candidate = await prisma.candidate.update({
+      where: { id },
+      data,
+    })
+
+    return {
+      id: candidate.id,
+      external_id: candidate.externalId,
+      applicant_name: candidate.applicantName,
+      applicant_email: candidate.applicantEmail,
+      company_name: candidate.companyName,
+      status: candidate.status,
+      startup_id: candidate.startupId,
+      organization_id: candidate.organizationId,
+      created_at: candidate.createdAt.toISOString(),
+      updated_at: candidate.updatedAt.toISOString(),
+    }
+  }
+
   static async analyzeCandidate(
     organizationId: string,
     id: string,

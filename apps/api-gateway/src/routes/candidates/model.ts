@@ -23,6 +23,14 @@ const getCandidatesQuery = t.Object({
   offset: t.Optional(t.String()),
 })
 
+const patchCandidateBody = t.Object({
+  external_id: t.Optional(t.String()),
+  applicant_name: t.Optional(t.String()),
+  applicant_email: t.Optional(t.String()),
+  company_name: t.Optional(t.String({ minLength: 1 })),
+  metadata: t.Optional(t.Record(t.String(), t.Any())),
+})
+
 const postInterviewBody = t.Object({
   expires_in_hours: t.Optional(t.Number()),
 })
@@ -75,6 +83,7 @@ export const CandidateModel = {
   params,
   postCandidateBody,
   getCandidatesQuery,
+  patchCandidateBody,
   postInterviewBody,
   candidateResponse,
   analysisItem,

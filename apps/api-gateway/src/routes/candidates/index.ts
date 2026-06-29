@@ -21,6 +21,11 @@ export const candidatesRoute = new Elysia()
     const data = await CandidateService.getCandidate(auth.organizationId, id)
     return { ok: true, data }
   })
+  .patch("/candidates/:id", async ({ auth, params: { id }, body }: any) => {
+    if (auth.type === "api_key") requireScope(auth, "write")
+    const data = await CandidateService.updateCandidate(auth.organizationId, id, body)
+    return { ok: true, data }
+  })
   .post("/candidates/:id/analyze", async ({ auth, params: { id } }: any) => {
     if (auth.type === "api_key") requireScope(auth, "write")
     const data = await CandidateService.analyzeCandidate(auth.organizationId, id)
