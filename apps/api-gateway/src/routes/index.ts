@@ -10,7 +10,14 @@ import { AuthRoute } from "./auth"
 import { dashboardRoute } from "./dashboard"
 import { eventsRoute } from "./events"
 import { sessionsRoute } from "./sessions"
+import { candidatesRoute } from "./candidates"
 
 export const routerv1 = new Elysia().group("/v1", (app) =>
-  app.use(pingRoute).use(AuthRoute).use(dashboardRoute).use(eventsRoute).use(sessionsRoute),
+  app
+    .use(pingRoute)
+    .use(AuthRoute)
+    .use(dashboardRoute)
+    .use(eventsRoute)
+    .use(sessionsRoute)
+    .use(candidatesRoute),
 )
