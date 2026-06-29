@@ -11,6 +11,7 @@ import { dashboardRoute } from "./dashboard"
 import { eventsRoute } from "./events"
 import { sessionsRoute } from "./sessions"
 import { candidatesRoute } from "./candidates"
+import { startupsRoute } from "./startups"
 
 export const routerv1 = new Elysia().group("/v1", (app) =>
   app
@@ -19,5 +20,6 @@ export const routerv1 = new Elysia().group("/v1", (app) =>
     .use(dashboardRoute)
     .use(eventsRoute)
     .use(sessionsRoute)
-    .use(candidatesRoute),
+    .use(candidatesRoute)
+    .use(startupsRoute),
 )
