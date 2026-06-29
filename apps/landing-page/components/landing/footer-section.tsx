@@ -3,28 +3,30 @@
 import { ArrowUpRight } from "lucide-react";
 import { AnimatedWave } from "./animated-wave";
 
+const PLATFORM = process.env.NEXT_PUBLIC_PLATFORM_URL || ""
+
 const footerLinks = {
   Product: [
     { name: "Features", href: "#features" },
     { name: "How it Works", href: "#how-it-works" },
     { name: "Pricing", href: "#pricing" },
-    { name: "Use Cases", href: "#" },
+    { name: "Use Cases", href: `${PLATFORM}/` },
   ],
   Resources: [
-    { name: "Documentation", href: "#" },
-    { name: "API Reference", href: "#" },
-    { name: "Integration Guide", href: "#" },
-    { name: "Status Page", href: "#" },
+    { name: "Documentation", href: `${PLATFORM}/docs` },
+    { name: "API Reference", href: `${PLATFORM}/docs` },
+    { name: "Integration Guide", href: `${PLATFORM}/docs` },
+    { name: "Status Page", href: `${PLATFORM}/` },
   ],
   Company: [
-    { name: "About FounderIQ", href: "#" },
-    { name: "Blog", href: "#" },
-    { name: "Careers", href: "#", badge: "Hiring" },
-    { name: "Contact", href: "#" },
+    { name: "About FounderIQ", href: `${PLATFORM}/` },
+    { name: "Blog", href: `${PLATFORM}/` },
+    { name: "Careers", href: `${PLATFORM}/`, badge: "Hiring" },
+    { name: "Contact", href: `${PLATFORM}/` },
   ],
   Legal: [
-    { name: "Privacy Policy", href: "#" },
-    { name: "Terms of Service", href: "#" },
+    { name: "Privacy Policy", href: `${PLATFORM}/` },
+    { name: "Terms of Service", href: `${PLATFORM}/` },
     { name: "Security", href: "#security" },
   ],
 };
@@ -49,7 +51,7 @@ export function FooterSection() {
           <div className="grid grid-cols-2 md:grid-cols-6 gap-12 lg:gap-8">
             {/* Brand Column */}
             <div className="col-span-2">
-              <a href="#" className="inline-flex items-center gap-2 mb-6">
+              <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/`} className="inline-flex items-center gap-2 mb-6">
                 <span className="text-2xl font-display">FounderIQ</span>
                 <span className="text-xs text-muted-foreground font-mono">TM</span>
               </a>

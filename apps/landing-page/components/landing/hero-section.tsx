@@ -117,19 +117,21 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            <Button 
+            <Button asChild
               size="lg" 
               className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
             >
-              Start Evaluating Startups
-              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/register`}>
+                Start Evaluating Startups
+                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              </a>
             </Button>
-            <Button 
+            <Button asChild
               size="lg" 
               variant="outline" 
               className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
             >
-              Book a Demo
+              <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/register`}>Book a Demo</a>
             </Button>
           </div>
         </div>

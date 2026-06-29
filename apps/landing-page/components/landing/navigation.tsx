@@ -64,14 +64,14 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <a href="#" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
+            <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/login`} className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
               Sign in
             </a>
-            <Button
+            <Button asChild
               size="sm"
               className={`bg-foreground hover:bg-foreground/90 text-background rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
-              Start Evaluating
+              <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/register`}>Start Evaluating</a>
             </Button>
           </div>
 
@@ -128,18 +128,18 @@ export function Navigation() {
           }`}
           style={{ transitionDelay: isMobileMenuOpen ? "300ms" : "0ms" }}
           >
-            <Button 
+            <Button asChild
               variant="outline" 
               className="flex-1 rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Sign in
+              <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/login`}>Sign in</a>
             </Button>
-            <Button 
+            <Button asChild
               className="flex-1 bg-foreground text-background rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Start Evaluating
+              <a href={`${process.env.NEXT_PUBLIC_PLATFORM_URL}/register`}>Start Evaluating</a>
             </Button>
           </div>
         </div>
