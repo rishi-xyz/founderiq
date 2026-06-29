@@ -269,12 +269,43 @@ model Interview {
 
   // Individual interview sessions (one per candidate)
   interviewSessions InterviewSession[]
+  // Per-category interview questions
+  interviewQuestions InterviewQuestion[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@index([startupId])
   @@map("interview")
+}
+
+// A per-category question within an interview round, optionally scored.
+//
+// Mapped table: interview_question
+// Indexes:      interview_id
+// Relations:    Interview (N:1)
+model InterviewQuestion {
+  // UUID primary key
+  id          String   @id @default(uuid())
+  // Question category (e.g. "Vision", "Market", "Financials")
+  category    String?
+  // The actual interview question
+  question    String
+  // Candidate's recorded answer (set on submission)
+  answer      String?
+  // AI-generated score (0-100) for the answer
+  score       Int?
+  // Display ordering within the interview
+  sortOrder   Int      @default(0) @map("sort_order")
+
+  // FK → Interview
+  interviewId String    @map("interview_id")
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([interviewId])
+  @@map("interview_question")
 }
 
 // A single interview session for a specific candidate within an interview round.
@@ -287,7 +318,7 @@ model InterviewSession {
   // UUID primary key
   id        String        @id @default(uuid())
   // Hashed token used for candidate authentication
-  tokenHash String        @map("token_hash")
+  tokenHash String        @unique @map("token_hash")
   // Session lifecycle status (default: PENDING)
   status    SessionStatus @default(PENDING)
 
