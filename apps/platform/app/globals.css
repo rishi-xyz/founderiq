@@ -2,3 +2,14 @@
 @import 'tw-animate-css';
 @import '@founderiq/ui/globals.css';
 @source "../../../packages/ui/src/";
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+@keyframes progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
