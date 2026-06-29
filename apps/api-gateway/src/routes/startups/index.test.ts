@@ -26,6 +26,14 @@ const mockGenerateQuestions = mock<(s: any, a: any) => Promise<any>>()
 const mockScoreAnswerAi = mock<(q: string, a: string) => Promise<any>>()
 const mockGenerateMemo = mock<(s: any, summary: string) => Promise<any>>()
 
+const mockDocumentCreate = mock<(q: any) => Promise<any>>()
+const mockDocumentFindMany = mock<(q: any) => Promise<any>>()
+const mockDocumentFindFirst = mock<(q: any) => Promise<any>>()
+const mockDocumentDelete = mock<(q: any) => Promise<any>>()
+const mockUploadFile = mock<(key: string, buffer: Buffer, type: string) => Promise<string>>()
+const mockDeleteFile = mock<(key: string) => Promise<void>>()
+const mockGenerateKey = mock<(id: string, name: string) => string>()
+
 mock.module("@founderiq/database", () => ({
   prisma: {
     startup: {
@@ -53,6 +61,12 @@ mock.module("@founderiq/database", () => ({
       create: mockMemoCreate,
       findFirst: mockMemoFindFirst,
     },
+    document: {
+      create: mockDocumentCreate,
+      findMany: mockDocumentFindMany,
+      findFirst: mockDocumentFindFirst,
+      delete: mockDocumentDelete,
+    },
   },
 }))
 
@@ -61,6 +75,14 @@ mock.module("../../lib/ai", () => ({
   generateInterviewQuestions: mockGenerateQuestions,
   scoreAnswer: mockScoreAnswerAi,
   generateInvestmentMemo: mockGenerateMemo,
+}))
+
+mock.module("../../lib/storage", () => ({
+  uploadFile: mockUploadFile,
+  deleteFile: mockDeleteFile,
+  generateKey: mockGenerateKey,
+  isAllowedMimeType: (t: string) => t.startsWith("image/") || t === "application/pdf",
+  isWithinSizeLimit: () => true,
 }))
 
 import { StartupService } from "./service"
@@ -120,6 +142,8 @@ describe("StartupService", () => {
       mockInterviewCreate, mockInterviewFindFirst, mockInterviewUpdate,
       mockQuestionCreate, mockQuestionFindMany, mockQuestionFindUnique, mockQuestionUpdate,
       mockMemoCreate, mockMemoFindFirst,
+      mockDocumentCreate, mockDocumentFindMany, mockDocumentFindFirst, mockDocumentDelete,
+      mockUploadFile, mockDeleteFile,
       mockAnalyzeAi, mockGenerateQuestions, mockScoreAnswerAi, mockGenerateMemo,
     ].forEach((fn) => fn.mockReset())
   })
@@ -523,6 +547,128 @@ describe("StartupService", () => {
       mockInterviewFindFirst.mockImplementationOnce(() => Promise.resolve(null))
 
       const caught: unknown = await StartupService.completeInterview(ORG_ID, STARTUP_ID, "bad").catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(404)
+    })
+  })
+
+  // ───── uploadDocument ────────────────────────────────────────────────
+
+  describe("uploadDocument", () => {
+    it("uploads file to R2 and creates document record", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+      mockGenerateKey.mockImplementationOnce(() => "startups/startup_1/123-test.pdf")
+      mockUploadFile.mockImplementationOnce(() => Promise.resolve("https://pub.r2.dev/startups/startup_1/123-test.pdf"))
+      mockDocumentCreate.mockImplementationOnce(() => Promise.resolve({
+        id: "doc_1",
+        fileType: "application/pdf",
+        fileUrl: "https://pub.r2.dev/startups/startup_1/123-test.pdf",
+        fileName: "pitch.pdf",
+        createdAt: NOW,
+      }))
+
+      const file = new File(["fake-content"], "pitch.pdf", { type: "application/pdf" })
+      const result = await StartupService.uploadDocument(ORG_ID, STARTUP_ID, file)
+
+      expect(result).toMatchObject({
+        id: "doc_1",
+        file_type: "application/pdf",
+        file_name: "pitch.pdf",
+      })
+      expect(mockUploadFile).toHaveBeenCalledTimes(1)
+      expect(mockDocumentCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ startupId: STARTUP_ID, fileName: "pitch.pdf" }),
+        }),
+      )
+    })
+
+    it("throws 422 for disallowed file type", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+
+      const file = new File(["bad"], "script.exe", { type: "application/x-msdownload" })
+      const caught: unknown = await StartupService.uploadDocument(ORG_ID, STARTUP_ID, file).catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(422)
+      expect((caught as ApiError).code).toBe("invalid_file_type")
+    })
+
+    it("throws 404 when startup not found", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(null))
+
+      const file = new File(["ok"], "doc.pdf", { type: "application/pdf" })
+      const caught: unknown = await StartupService.uploadDocument(ORG_ID, "bad", file).catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(404)
+    })
+  })
+
+  // ───── listDocuments ─────────────────────────────────────────────────
+
+  describe("listDocuments", () => {
+    it("returns documents for a startup", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+      mockDocumentFindMany.mockImplementationOnce(() =>
+        Promise.resolve([
+          { id: "doc_1", fileType: "application/pdf", fileUrl: "https://r2.dev/doc.pdf", fileName: "pitch.pdf", uploadStatus: "COMPLETE", createdAt: NOW },
+        ]),
+      )
+
+      const result = await StartupService.listDocuments(ORG_ID, STARTUP_ID)
+
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ file_type: "application/pdf", file_name: "pitch.pdf" })
+    })
+
+    it("throws 404 when startup not found", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(null))
+
+      const caught: unknown = await StartupService.listDocuments(ORG_ID, "bad").catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(404)
+    })
+  })
+
+  // ───── deleteDocument ────────────────────────────────────────────────
+
+  describe("deleteDocument", () => {
+    it("deletes file from R2 and removes document record", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+      mockDocumentFindFirst.mockImplementationOnce(() =>
+        Promise.resolve({
+          id: "doc_1",
+          fileUrl: "https://r2.dev/startups/startup_1/doc.pdf",
+          startupId: STARTUP_ID,
+        }),
+      )
+      mockDeleteFile.mockImplementationOnce(() => Promise.resolve())
+      mockDocumentDelete.mockImplementationOnce(() => Promise.resolve({}))
+
+      const result = await StartupService.deleteDocument(ORG_ID, STARTUP_ID, "doc_1")
+
+      expect(result).toEqual({ deleted: true })
+      expect(mockDeleteFile).toHaveBeenCalledTimes(1)
+      expect(mockDocumentDelete).toHaveBeenCalledWith({ where: { id: "doc_1" } })
+    })
+
+    it("throws 404 when startup not found", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(null))
+
+      const caught: unknown = await StartupService.deleteDocument(ORG_ID, "bad", "doc_1").catch((e) => e)
+
+      expect(caught).toBeInstanceOf(ApiError)
+      expect((caught as ApiError).status).toBe(404)
+    })
+
+    it("throws 404 when document not found", async () => {
+      mockStartupFindFirst.mockImplementationOnce(() => Promise.resolve(mockStartup))
+      mockDocumentFindFirst.mockImplementationOnce(() => Promise.resolve(null))
+
+      const caught: unknown = await StartupService.deleteDocument(ORG_ID, STARTUP_ID, "bad").catch((e) => e)
 
       expect(caught).toBeInstanceOf(ApiError)
       expect((caught as ApiError).status).toBe(404)

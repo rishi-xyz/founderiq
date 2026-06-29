@@ -1,5 +1,6 @@
 import Elysia from "elysia"
 import { authenticateRequest, requireScope } from "../../middleware/auth"
+import { ApiError } from "../../middleware"
 import { StartupService } from "./service"
 
 export const startupsRoute = new Elysia()
@@ -70,5 +71,23 @@ export const startupsRoute = new Elysia()
       startupId,
       body.interview_id,
     )
+    return { ok: true, data }
+  })
+  .post("/startups/:id/documents", async ({ auth, params: { id }, request }: any) => {
+    if (auth.type === "api_key") requireScope(auth, "write")
+    const formData = await request.formData()
+    const file = formData.get("file") as File | null
+    if (!file) throw new ApiError(422, "validation_error", "file is required.")
+    const data = await StartupService.uploadDocument(auth.organizationId, id, file)
+    return { ok: true, data }
+  })
+  .get("/startups/:id/documents", async ({ auth, params: { id } }: any) => {
+    if (auth.type === "api_key") requireScope(auth, "read")
+    const data = await StartupService.listDocuments(auth.organizationId, id)
+    return { ok: true, data }
+  })
+  .delete("/startups/:id/documents/:docId", async ({ auth, params: { id, docId } }: any) => {
+    if (auth.type === "api_key") requireScope(auth, "write")
+    const data = await StartupService.deleteDocument(auth.organizationId, id, docId)
     return { ok: true, data }
   })

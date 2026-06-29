@@ -11,6 +11,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1076.0",
     "@elysia/openapi": "^1.4.15",
     "@elysiajs/cors": "^1.2.0",
     "@founderiq/database": "workspace:*",

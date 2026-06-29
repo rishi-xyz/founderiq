@@ -6,6 +6,7 @@ import {
   scoreAnswer as aiScoreAnswer,
   generateInvestmentMemo,
 } from "../../lib/ai"
+import { uploadFile, deleteFile, generateKey, isAllowedMimeType, isWithinSizeLimit } from "../../lib/storage"
 
 function toStartupInput(s: {
   id: string
@@ -399,5 +400,89 @@ export abstract class StartupService {
     })
 
     return { overall_score: avg }
+  }
+
+  static async uploadDocument(
+    organizationId: string,
+    startupId: string,
+    file: File,
+  ) {
+    const startup = await prisma.startup.findFirst({
+      where: { id: startupId, organizationId },
+    })
+    if (!startup) throw new ApiError(404, "not_found", "Startup not found.")
+
+    if (!isAllowedMimeType(file.type)) {
+      throw new ApiError(422, "invalid_file_type", `File type "${file.type}" is not allowed.`)
+    }
+
+    if (!isWithinSizeLimit(file.size)) {
+      throw new ApiError(422, "file_too_large", "File exceeds 50 MB limit.")
+    }
+
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const key = generateKey(startupId, file.name)
+    const url = await uploadFile(key, buffer, file.type)
+
+    const doc = await prisma.document.create({
+      data: {
+        startupId,
+        fileType: file.type,
+        fileUrl: url,
+        fileName: file.name,
+        uploadStatus: "COMPLETE",
+      },
+    })
+
+    return {
+      id: doc.id,
+      file_type: doc.fileType,
+      file_url: doc.fileUrl,
+      file_name: doc.fileName,
+      created_at: doc.createdAt.toISOString(),
+    }
+  }
+
+  static async listDocuments(organizationId: string, startupId: string) {
+    const startup = await prisma.startup.findFirst({
+      where: { id: startupId, organizationId },
+    })
+    if (!startup) throw new ApiError(404, "not_found", "Startup not found.")
+
+    const documents = await prisma.document.findMany({
+      where: { startupId },
+      orderBy: { createdAt: "desc" },
+    })
+
+    return documents.map((d) => ({
+      id: d.id,
+      file_type: d.fileType,
+      file_url: d.fileUrl,
+      file_name: d.fileName,
+      upload_status: d.uploadStatus,
+      created_at: d.createdAt.toISOString(),
+    }))
+  }
+
+  static async deleteDocument(organizationId: string, startupId: string, docId: string) {
+    const startup = await prisma.startup.findFirst({
+      where: { id: startupId, organizationId },
+    })
+    if (!startup) throw new ApiError(404, "not_found", "Startup not found.")
+
+    const doc = await prisma.document.findFirst({
+      where: { id: docId, startupId },
+    })
+    if (!doc) throw new ApiError(404, "not_found", "Document not found.")
+
+    if (doc.fileUrl) {
+      const publicUrl = process.env.R2_PUBLIC_URL ?? ""
+      const key = publicUrl ? doc.fileUrl.replace(`${publicUrl}/`, "") : doc.fileUrl
+      await deleteFile(key).catch(() => {})
+    }
+
+    await prisma.document.delete({ where: { id: docId } })
+
+    return { deleted: true }
   }
 }
